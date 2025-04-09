@@ -40,7 +40,7 @@ def telegram_webhook():
                 reply = "Отправь видео или ссылку на Reels, TikTok, YouTube и т.д."
             elif text.lower() == '/pay':
                 reply = "Оплатить можно тут: https://yourpaymentpage.com"
-            elif re.search(r'https?://[^\s]+', text):  # Если в тексте есть ссылка
+            elif re.search(r'https?://[^\s]+', text):  # Обработка любых ссылок
                 download_url = f"https://rocketcontentbot.onrender.com/download?url={text}"
                 try:
                     result = requests.get(download_url).json()
@@ -49,7 +49,7 @@ def telegram_webhook():
                     else:
                         reply = f"Ошибка при скачивании: {result.get('error', 'Неизвестная ошибка')}"
                 except Exception as e:
-                    reply = f"Ошибка при обращении к загрузчику: {str(e)}"
+                    reply = f"Ошибка при загрузке: {str(e)}"
             else:
                 reply = f"Ты написал: {text}"
 

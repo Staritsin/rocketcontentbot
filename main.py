@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import requests
 import yt_dlp
+import re
 import os
 
 app = Flask(__name__)
@@ -21,24 +22,34 @@ def telegram_webhook():
         message = data['message']
 
         if 'text' in message:
-            text = message['text'].lower()
+            text = message['text']
 
-            if text == '/start':
-                reply = "Привет! Я бот, который помогает создавать контент. Напиши /menu, чтобы выбрать, что ты хочешь сделать."
-            elif text == '/menu':
+            if text.lower() == '/start':
+                reply = "Привет! Я бот для создания Reels. Напиши /menu, чтобы выбрать действие."
+            elif text.lower() == '/menu':
                 reply = ("Выбери действие:
 "
                          "/generate – Создать Reels
 "
-                         "/support – Написать в поддержку
+                         "/support – Техподдержка
 "
                          "/pay – Оплатить подписку")
-            elif text == '/support':
-                reply = "Напиши нам: @your_support_username"
-            elif text == '/generate':
-                reply = "Отправь видео или ссылку на Reels, и я начну обработку."
-            elif text == '/pay':
-                reply = "Оплатить можно по ссылке: https://yourpaymentpage.com"
+            elif text.lower() == '/support':
+                reply = "Напиши в поддержку: @your_support_username"
+            elif text.lower() == '/generate':
+                reply = "Отправь видео или ссылку на Reels, TikTok, YouTube и т.д."
+            elif text.lower() == '/pay':
+                reply = "Оплатить можно тут: https://yourpaymentpage.com"
+            elif re.search(r'https?://[^\s]+', text):  # Если в тексте есть ссылка
+                download_url = f"https://rocketcontentbot.onrender.com/download?url={text}"
+                try:
+                    result = requests.get(download_url).json()
+                    if 'filename' in result:
+                        reply = f"Видео загружено: {result['filename']}"
+                    else:
+                        reply = f"Ошибка при скачивании: {result.get('error', 'Неизвестная ошибка')}"
+                except Exception as e:
+                    reply = f"Ошибка при обращении к загрузчику: {str(e)}"
             else:
                 reply = f"Ты написал: {text}"
 

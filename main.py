@@ -1,5 +1,6 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import requests
+import yt_dlp
 import os
 
 app = Flask(__name__)
@@ -18,15 +19,35 @@ def telegram_webhook():
     if 'message' in data:
         chat_id = data['message']['chat']['id']
         message = data['message']
-        
-        if 'video' in message:
+
+        if 'text' in message:
+            text = message['text'].lower()
+
+            if text == '/start':
+                reply = "Привет! Я бот, который помогает создавать контент. Напиши /menu, чтобы выбрать, что ты хочешь сделать."
+            elif text == '/menu':
+                reply = ("Выбери действие:
+"
+                         "/generate – Создать Reels
+"
+                         "/support – Написать в поддержку
+"
+                         "/pay – Оплатить подписку")
+            elif text == '/support':
+                reply = "Напиши нам: @your_support_username"
+            elif text == '/generate':
+                reply = "Отправь видео или ссылку на Reels, и я начну обработку."
+            elif text == '/pay':
+                reply = "Оплатить можно по ссылке: https://yourpaymentpage.com"
+            else:
+                reply = f"Ты написал: {text}"
+
+        elif 'video' in message:
             file_id = message['video']['file_id']
-            # Получаем ссылку на файл
             file_info = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}").json()
             file_path = file_info['result']['file_path']
             file_url = TELEGRAM_FILE_API + file_path
 
-            # Скачиваем видео
             video_data = requests.get(file_url)
             video_filename = f"video_{file_id}.mp4"
             with open(video_filename, 'wb') as f:
@@ -34,20 +55,39 @@ def telegram_webhook():
 
             reply = f"Видео получено и сохранено как {video_filename}"
 
-        elif 'text' in message:
-            text = message['text']
-            reply = f"Ты написал: {text}"
-
         else:
             reply = "Я пока не знаю, что с этим делать..."
 
-        # Ответ пользователю
         requests.post(TELEGRAM_API_URL, json={
             'chat_id': chat_id,
             'text': reply
         })
 
     return 'ok'
+
+@app.route('/download', methods=['GET'])
+def download():
+    url = request.args.get('url')
+    if not url:
+        return jsonify({'error': 'No URL provided'}), 400
+
+    try:
+        ydl_opts = {
+            'format': 'mp4',
+            'quiet': True,
+            'outtmpl': 'downloaded_video.%(ext)s',
+        }
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info_dict = ydl.extract_info(url, download=True)
+            video_file = ydl.prepare_filename(info_dict)
+            return jsonify({
+                'title': info_dict.get('title'),
+                'filename': video_file
+            })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000)

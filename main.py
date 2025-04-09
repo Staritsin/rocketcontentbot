@@ -6,6 +6,7 @@ import os
 
 app = Flask(__name__)
 BOT_TOKEN = '8056198011:AAFZMYMpWGvOjhEucRhquBJ1Hoc0d8y0K6s'
+OPENAI_API_KEY = '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'
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
 TELEGRAM_FILE_API = f'https://api.telegram.org/file/bot{BOT_TOKEN}/'
 
@@ -65,6 +66,32 @@ def telegram_webhook():
                 f.write(video_data.content)
 
             reply = f"Видео получено и сохранено как {video_filename}"
+
+        elif 'voice' in message:
+            file_id = message['voice']['file_id']
+            file_info = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}").json()
+            file_path = file_info['result']['file_path']
+            file_url = TELEGRAM_FILE_API + file_path
+
+            ogg_data = requests.get(file_url)
+            ogg_filename = f"voice_{file_id}.ogg"
+            with open(ogg_filename, 'wb') as f:
+                f.write(ogg_data.content)
+
+            whisper_response = requests.post(
+                'https://api.openai.com/v1/audio/transcriptions',
+                headers={'Authorization': f'Bearer {OPENAI_API_KEY}'},
+                files={
+                    'file': (ogg_filename, open(ogg_filename, 'rb')),
+                    'model': (None, 'whisper-1')
+                }
+            )
+
+            if whisper_response.status_code == 200:
+                text_result = whisper_response.json()['text']
+                reply = f"Твой голос: {text_result}"
+            else:
+                reply = f"Ошибка при распознавании голоса"
 
         else:
             reply = "Я пока не знаю, что с этим делать..."

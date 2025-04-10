@@ -5,6 +5,19 @@ import re
 import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from handlers.handlers_video import handle_video
+from handlers.handlers_reels import handle_transcribe
+from handlers.handlers_rewrite import handle_rewrite
+from handlers.handlers_capcut import handle_capcut
+from handlers.handlers_subtitles import handle_subtitles
+from handlers.handlers_thumbnail import handle_thumbnail
+from handlers.handlers_publish import handle_publish
+from handlers.handlers_voice import handle_voice
+from handlers.handlers_text import handle_text
+from handlers.handlers_image import handle_image
+from handlers.handlers_plan import handle_plan
+from handlers.handlers_pay import handle_pay
+from handlers.handlers_support import handle_support
+
 
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')

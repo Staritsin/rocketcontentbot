@@ -30,7 +30,7 @@ def telegram_webhook():
                 reply = "Привет! Я бот для создания Reels. Напиши /menu, чтобы выбрать действие."
            
             elif text.lower() == '/menu':
-    reply = 
+    reply =
     """Выбери действие:
 /generate – Создать Reels
 /support – Техподдержка

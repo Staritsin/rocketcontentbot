@@ -59,7 +59,7 @@ def telegram_webhook():
                         InlineKeyboardButton("💳 Оплатить", callback_data='pay')
                     ],
                     [
-                        InlineKeyboardButton("🛠 Техподдержка", url='https://t.me/rocketcontent_supportbot')
+                        InlineKeyboardButton("🛠 Техподдержка", callback_data='support')
                     ]
                 ]
                 reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
@@ -83,6 +83,18 @@ def telegram_webhook():
 
         if query_data == 'video':
             handle_video(chat_id)
+        elif query_data == 'voice':
+            send_message(chat_id, "🎧 Работа с голосом\nОтправь голосовое сообщение — я превращу его в текст.")
+        elif query_data == 'text':
+            send_message(chat_id, "✍️ Работа с текстом\nОтправь мне текст или команду для генерации, рерайта или создания сценария.")
+        elif query_data == 'image':
+            send_message(chat_id, "🖼 Работа с изображениями\nНапиши, что ты хочешь увидеть, и я сгенерирую картинку.")
+        elif query_data == 'plan':
+            send_message(chat_id, "📅 Контент-план\nОтправь мне тематику, и я помогу составить план публикаций.")
+        elif query_data == 'pay':
+            send_message(chat_id, "💳 Оплата\nОплатить можно по ссылке: https://yourpaymentpage.com")
+        elif query_data == 'support':
+            send_message(chat_id, "🛠 Поддержка\nНапиши в поддержку: @rocketcontent_supportbot")
 
     return jsonify(success=True)
 

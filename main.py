@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify
 import requests
 import yt_dlp
@@ -17,7 +18,6 @@ from handlers.handlers_image import handle_image
 from handlers.handlers_plan import handle_plan
 from handlers.handlers_pay import handle_pay
 from handlers.handlers_support import handle_support
-
 
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
@@ -93,7 +93,6 @@ def telegram_webhook():
         query_data = callback['data']
         callback_id = callback['id']
 
-        # Ответ на нажатие кнопки (обязателен для Telegram)
         requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerCallbackQuery", json={
             'callback_query_id': callback_id
         })
@@ -101,20 +100,19 @@ def telegram_webhook():
         if query_data == 'video':
             handle_video(chat_id)
         elif query_data == 'voice':
-            send_message(chat_id, "🎧 Работа с голосом\nОтправь голосовое сообщение — я превращу его в текст.")
+            handle_voice(chat_id)
         elif query_data == 'text':
-            send_message(chat_id, "✍️ Работа с текстом\nОтправь мне текст или команду для генерации, рерайта или создания сценария.")
+            handle_text(chat_id)
         elif query_data == 'image':
-            send_message(chat_id, "🖼 Работа с изображениями\nНапиши, что ты хочешь увидеть, и я сгенерирую картинку.")
+            handle_image(chat_id)
         elif query_data == 'plan':
-            send_message(chat_id, "📅 Контент-план\nОтправь мне тематику, и я помогу составить план публикаций.")
+            handle_plan(chat_id)
         elif query_data == 'pay':
-            send_message(chat_id, "💳 Оплата\nОплатить можно по ссылке: https://yourpaymentpage.com")
+            handle_pay(chat_id)
         elif query_data == 'support':
-            send_message(chat_id, "🛠 Поддержка\nНапиши в поддержку: @rocketcontent_supportbot")
+            handle_support(chat_id)
         elif query_data == 'smart_reels':
             send_message(chat_id, "📲 Умное создание Reels\nОтправь мне видео или ссылку. Я сделаю: транскрибацию, рерайт, субтитры, видео из шаблона, обложку и публикацию.\n\nВыбери действие:")
-
             keyboard = [
                 [
                     InlineKeyboardButton("🔤 Транскрибация", callback_data='transcribe'),
@@ -129,14 +127,24 @@ def telegram_webhook():
                     InlineKeyboardButton("📤 Постинг", callback_data='publish')
                 ]
             ]
-
             reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
-
             requests.post(TELEGRAM_API_URL, json={
                 'chat_id': chat_id,
                 'text': 'Выбери, что сделать с видео 👇',
                 'reply_markup': reply_markup
             })
+        elif query_data == 'transcribe':
+            handle_transcribe(chat_id)
+        elif query_data == 'rewrite':
+            handle_rewrite(chat_id)
+        elif query_data == 'capcut':
+            handle_capcut(chat_id)
+        elif query_data == 'subtitles':
+            handle_subtitles(chat_id)
+        elif query_data == 'thumbnail':
+            handle_thumbnail(chat_id)
+        elif query_data == 'publish':
+            handle_publish(chat_id)
 
     return jsonify(success=True)
 

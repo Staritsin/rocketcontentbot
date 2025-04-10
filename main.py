@@ -6,6 +6,10 @@ import re
 import os
 from telegram.ext import Updater, CommandHandler
 from handlers.menu import menu  # Импортируем функцию меню
+from handlers.menu import menu
+from telegram import Update
+from telegram.ext import CallbackContext
+
 
 app = Flask(__name__)
 

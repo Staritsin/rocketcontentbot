@@ -3,6 +3,7 @@ import requests
 import yt_dlp
 import re
 import os
+from handlers.handlers_video import handle_video
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 app = Flask(__name__)

@@ -5,6 +5,7 @@ import re
 import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from handlers.handlers_video import handle_video
+from handlers.handlers_reels import handle_transcribe  # добавили хендлер транскрибации
 
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
@@ -100,7 +101,7 @@ def telegram_webhook():
         elif query_data == 'support':
             send_message(chat_id, "🛠 Поддержка\nНапиши в поддержку: @rocketcontent_supportbot")
         elif query_data == 'smart_reels':
-            send_message(chat_id, "📲 Умное создание Reels\nОтправь мне видео или ссылку. Я сделаю: транскрибацию, рерайт, субтитры, видео из шаблона, обложку и публикацию.\n\nВыбери действие:")
+            send_message(chat_id, "📲 Умное создание Reels\nОтправь мне видео или ссылку. Я сделаю: транскрибацию, рерайт, субтитры, видео из шаблона, обложку и публикацию.\n\nВыбери действие:", )
 
             keyboard = [
                 [
@@ -124,6 +125,9 @@ def telegram_webhook():
                 'text': 'Выбери, что сделать с видео 👇',
                 'reply_markup': reply_markup
             })
+
+        elif query_data == 'transcribe':
+            handle_transcribe(chat_id)
 
     return jsonify(success=True)
 

@@ -1,33 +1,38 @@
-# handlers/menu.py
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import CallbackContext
+# handlers_menu.py
 
-def menu(update: Update, context: CallbackContext):
-    """
-    Handler function for the /menu command. 
-    Displays an inline keyboard with options for the user to choose actions.
-    """
-    # Define the buttons for the menu
+import os
+import requests
+from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+
+BOT_TOKEN = os.environ.get("BOT_TOKEN")
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
+def handle_menu(chat_id):
     keyboard = [
         [
-            InlineKeyboardButton("📹 Видео с телефона", callback_data="upload_video"),
-            InlineKeyboardButton("🔗 Ссылка на Reels", callback_data="reels_link"),
+            InlineKeyboardButton("🎬 Работа с видео", callback_data="video"),
+            InlineKeyboardButton("🎧 Работа с голосом", callback_data="voice")
         ],
         [
-            InlineKeyboardButton("📝 Генерация текста", callback_data="generate_text"),
-            InlineKeyboardButton("📜 Сценарий текста", callback_data="script_text"),
+            InlineKeyboardButton("✍️ Работа с текстом", callback_data="text"),
+            InlineKeyboardButton("🖼 Работа с изображениями", callback_data="image")
         ],
         [
-            InlineKeyboardButton("💳 Оплата", callback_data="payment"),
-            InlineKeyboardButton("🛠 Техподдержка", callback_data="support"),
+            InlineKeyboardButton("📅 Контент-план", callback_data="plan"),
+            InlineKeyboardButton("💳 Оплатить", callback_data="pay")
         ],
+        [
+            InlineKeyboardButton("📲 Создать Reels по видео/ссылке", callback_data="smart_reels")
+        ],
+        [
+            InlineKeyboardButton("🛠 Техподдержка", callback_data="support")
+        ]
     ]
 
-    # Create the inline keyboard markup
     reply_markup = InlineKeyboardMarkup(keyboard)
 
-    # Send the message with the inline keyboard
-    update.message.reply_text(
-        "Выберите действие из меню ниже:",
-        reply_markup=reply_markup
-    )
+    requests.post(TELEGRAM_API_URL, json={
+        'chat_id': chat_id,
+        'text': 'Что будем делать? Выбери из меню ниже 👇',
+        'reply_markup': reply_markup.to_dict()
+    })

@@ -6,7 +6,6 @@ import re
 import os
 from telegram.ext import Updater, CommandHandler
 from handlers.menu import menu  # Импортируем функцию меню
-from handlers.menu import menu
 from telegram import Update
 from telegram.ext import CallbackContext
 
@@ -36,10 +35,9 @@ def telegram_webhook():
             if text.lower() == '/start':
                 reply = "Привет! Я бот для создания контента и Reels. Напиши /menu, чтобы выбрать действие."
             elif text.lower() == '/menu':
-                reply = """Выбери действие:
-/generate – Создать Reels
-/support – Техподдержка
-/pay – Оплатить подписку"""
+    # Показываем клавиатуру с кнопками из handlers.menu
+        menu(Update.de_json(data, context=None), CallbackContext(dispatcher=None))
+        return 'ok'
             elif text.lower() == '/support':
                 reply = "Напиши в поддержку: @your_support_username"
             elif text.lower() == '/generate':

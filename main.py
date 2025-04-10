@@ -18,6 +18,8 @@ from handlers.handlers_image import handle_image
 from handlers.handlers_plan import handle_plan
 from handlers.handlers_pay import handle_pay
 from handlers.handlers_support import handle_support
+from handlers.utils import TELEGRAM_API_URL  # или передай как параметр
+
 
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')

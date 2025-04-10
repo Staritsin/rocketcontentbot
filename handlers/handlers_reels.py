@@ -28,17 +28,17 @@ def transcribe_audio(chat_id, file_url):
 
         result = response.json()
 
-        if "text" in result:
-            requests.post(TELEGRAM_API_URL, json={
-                'chat_id': chat_id,
-                'text': f"🔤 Готовая транскрибация:
-{result['text']}"
-            })
-        else:
-            requests.post(TELEGRAM_API_URL, json={
-                'chat_id': chat_id,
-                'text': f"❌ Ошибка транскрибации: {result}"
-            })
+      if "text" in result:
+    requests.post(TELEGRAM_API_URL, json={
+        'chat_id': chat_id,
+        'text': f"📼 Готовая транскрибация:\n{result['text']}"
+    })
+    else:
+    requests.post(TELEGRAM_API_URL, json={
+        'chat_id': chat_id,
+        'text': f"❌ Ошибка транскрибации: {result}"
+    })
+
 
     except Exception as e:
         requests.post(TELEGRAM_API_URL, json={

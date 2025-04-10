@@ -28,11 +28,13 @@ def telegram_webhook():
 
             if text.lower() == '/start':
                 reply = "Привет! Я бот для создания Reels. Напиши /menu, чтобы выбрать действие."
+           
             elif text.lower() == '/menu':
     reply = """Выбери действие:
 /generate – Создать Reels
 /support – Техподдержка
 /pay – Оплатить подписку"""
+
                 
             elif text.lower() == '/support':
                 reply = "Напиши в поддержку: @your_support_username"

@@ -36,32 +36,35 @@ def telegram_webhook():
                 reply = "Привет! Я бот для создания контента и Reels. Напиши /menu, чтобы выбрать действие."
                 
             elif text.lower() == '/menu':
-    # Показываем клавиатуру с кнопками из handlers.menu
-            keyboard = [
+    keyboard = [
         [
-            {"text": "📹 Видео с телефона", "callback_data": "upload_video"},
-            {"text": "🔗 Ссылка на Reels", "callback_data": "reels_link"},
+            {'text': "📹 Видео с телефона", 'callback_data': "upload_video"},
+            {'text': "🔗 Ссылка на Reels", 'callback_data': "reels_link"},
         ],
         [
-            {"text": "📝 Генерация текста", "callback_data": "generate_text"},
-            {"text": "📜 Сценарий текста", "callback_data": "script_text"},
+            {'text': "📝 Генерация текста", 'callback_data': "generate_text"},
+            {'text': "📜 Сценарий текста", 'callback_data': "script_text"},
         ],
         [
-            {"text": "💳 Оплата", "callback_data": "payment"},
-            {"text": "🛠 Техподдержка", "callback_data": "support"},
+            {'text': "💳 Оплата", 'callback_data': "payment"},
+            {'text': "🛠 Техподдержка", 'callback_data': "support"},
         ]
     ]
 
     reply_markup = {
-        "inline_keyboard": keyboard
+        "inline_keyboard": [[btn for btn in row] for row in keyboard]
     }
 
-    requests.post(TELEGRAM_API_URL, json={
-        'chat_id': chat_id,
-        'text': "Выбери действие из меню ниже:",
-        'reply_markup': reply_markup
-    })
+    requests.post(
+        TELEGRAM_API_URL,
+        json={
+            'chat_id': chat_id,
+            'text': "Выберите действие из меню ниже:",
+            'reply_markup': reply_markup
+        }
+    )
     return 'ok'
+
             elif text.lower() == '/support':
                 reply = "Напиши в поддержку: @your_support_username"
             elif text.lower() == '/generate':

@@ -4,8 +4,11 @@ import requests
 import yt_dlp
 import re
 import os
+from telegram.ext import Updater, CommandHandler
+from handlers.menu import menu  # Импортируем функцию меню
 
 app = Flask(__name__)
+
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
@@ -27,7 +30,7 @@ def telegram_webhook():
             text = message['text']
 
             if text.lower() == '/start':
-                reply = "Привет! Я бот для создания Reels. Напиши /menu, чтобы выбрать действие."
+                reply = "Привет! Я бот для создания контента и Reels. Напиши /menu, чтобы выбрать действие."
             elif text.lower() == '/menu':
                 reply = """Выбери действие:
 /generate – Создать Reels

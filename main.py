@@ -1,11 +1,21 @@
-
 from flask import Flask, request, jsonify
 import requests
 import yt_dlp
 import re
 import os
+import logging
+from dotenv import load_dotenv
+
+# Загрузка переменных окружения
+load_dotenv()
 
 app = Flask(__name__)
+
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+# Переменные окружения
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
@@ -18,42 +28,36 @@ def index():
 @app.route('/telegram', methods=['POST'])
 def telegram_webhook():
     data = request.get_json()
+    logger.info(f"Получены данные от Telegram: {data}")  # Логируем входящие данные
 
     if 'message' in data:
         chat_id = data['message']['chat']['id']
         message = data['message']
 
         if 'text' in message:
-            text = message['text']
+            text = message['text'].lower()
 
-            if text.lower() == '/start':
+            if text == '/start':
                 reply = "Привет! Я бот для создания Reels. Напиши /menu, чтобы выбрать действие."
-            elif text.lower() == '/menu':
+                logger.info(f"Ответ: {reply}")
+            elif text == '/menu':
                 reply = """Выбери действие:
 /generate – Создать Reels
 /support – Техподдержка
 /pay – Оплатить подписку"""
-            elif text.lower() == '/support':
+            elif text == '/support':
                 reply = "Напиши в поддержку: @your_support_username"
-            elif text.lower() == '/generate':
+            elif text == '/generate':
                 reply = "Отправь видео или ссылку на Reels, TikTok, YouTube и т.д."
-            elif text.lower() == '/pay':
+            elif text == '/pay':
                 reply = "Оплатить можно тут: https://yourpaymentpage.com"
-            elif re.search(r'https?://[^\s]+', text):
-                download_url = f"https://rocketcontentbot.onrender.com/download?url={text}"
-                try:
-                    result = requests.get(download_url).json()
-                    if 'filename' in result:
-                        reply = f"Видео загружено: {result['filename']}"
-                    else:
-                        reply = f"Ошибка при скачивании: {result.get('error', 'Неизвестная ошибка')}"
-                except Exception as e:
-                    reply = f"Ошибка при загрузке: {str(e)}"
             else:
                 reply = f"Ты написал: {text}"
 
         elif 'video' in message:
             file_id = message['video']['file_id']
+            logger.info(f"Получено видео с file_id: {file_id}")
+
             file_info = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}").json()
             file_path = file_info['result']['file_path']
             file_url = TELEGRAM_FILE_API + file_path
@@ -64,9 +68,12 @@ def telegram_webhook():
                 f.write(video_data.content)
 
             reply = f"Видео получено и сохранено как {video_filename}"
+            logger.info(f"Видео сохранено как {video_filename}")
 
         elif 'voice' in message:
             file_id = message['voice']['file_id']
+            logger.info(f"Получено голосовое сообщение с file_id: {file_id}")
+
             file_info = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}").json()
             file_path = file_info['result']['file_path']
             file_url = TELEGRAM_FILE_API + file_path
@@ -79,10 +86,7 @@ def telegram_webhook():
             whisper_response = requests.post(
                 'https://api.openai.com/v1/audio/transcriptions',
                 headers={'Authorization': f'Bearer {OPENAI_API_KEY}'},
-                files={
-                    'file': (ogg_filename, open(ogg_filename, 'rb')),
-                    'model': (None, 'whisper-1')
-                }
+                files={'file': (ogg_filename, open(ogg_filename, 'rb')), 'model': (None, 'whisper-1')}
             )
 
             if whisper_response.status_code == 200:
@@ -90,14 +94,12 @@ def telegram_webhook():
                 reply = f"Твой голос: {text_result}"
             else:
                 reply = f"Ошибка при распознавании голоса"
+            logger.info(f"Распознан текст: {text_result}")
 
         else:
             reply = "Я пока не знаю, что с этим делать..."
 
-        requests.post(TELEGRAM_API_URL, json={
-            'chat_id': chat_id,
-            'text': reply
-        })
+        requests.post(TELEGRAM_API_URL, json={'chat_id': chat_id, 'text': reply})
 
     return 'ok'
 

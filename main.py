@@ -3,8 +3,8 @@ import requests
 import yt_dlp
 import re
 import os
-from handlers.handlers_video import handle_video
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from handlers.handlers_video import handle_video
 
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
@@ -69,6 +69,20 @@ def telegram_webhook():
                     'text': 'Что будем делать? Выбери из меню ниже 👇',
                     'reply_markup': reply_markup
                 })
+
+    elif 'callback_query' in data:
+        callback = data['callback_query']
+        chat_id = callback['message']['chat']['id']
+        query_data = callback['data']
+        callback_id = callback['id']
+
+        # Ответ на нажатие кнопки (обязателен для Telegram)
+        requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerCallbackQuery", json={
+            'callback_query_id': callback_id
+        })
+
+        if query_data == 'video':
+            handle_video(chat_id)
 
     return jsonify(success=True)
 

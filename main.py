@@ -5,8 +5,8 @@ import re
 import os
 
 app = Flask(__name__)
-BOT_TOKEN = '8056198011:AAFZMYMpWGvOjhEucRhquBJ1Hoc0d8y0K6s'
-OPENAI_API_KEY = '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'
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
 TELEGRAM_FILE_API = f'https://api.telegram.org/file/bot{BOT_TOKEN}/'
 
@@ -41,7 +41,7 @@ def telegram_webhook():
                 reply = "Отправь видео или ссылку на Reels, TikTok, YouTube и т.д."
             elif text.lower() == '/pay':
                 reply = "Оплатить можно тут: https://yourpaymentpage.com"
-            elif re.search(r'https?://[^\s]+', text):  # Обработка любых ссылок
+            elif re.search(r'https?://[^\s]+', text):
                 download_url = f"https://rocketcontentbot.onrender.com/download?url={text}"
                 try:
                     result = requests.get(download_url).json()

@@ -1,3 +1,4 @@
+
 from flask import Flask, request, jsonify
 import requests
 import yt_dlp
@@ -5,12 +6,8 @@ import re
 import os
 
 app = Flask(__name__)
-
-# Переменные окружения
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
-
-# Telegram API
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
 TELEGRAM_FILE_API = f'https://api.telegram.org/file/bot{BOT_TOKEN}/'
 
@@ -31,22 +28,17 @@ def telegram_webhook():
 
             if text.lower() == '/start':
                 reply = "Привет! Я бот для создания Reels. Напиши /menu, чтобы выбрать действие."
-
             elif text.lower() == '/menu':
                 reply = """Выбери действие:
 /generate – Создать Reels
 /support – Техподдержка
 /pay – Оплатить подписку"""
-
             elif text.lower() == '/support':
                 reply = "Напиши в поддержку: @your_support_username"
-
             elif text.lower() == '/generate':
                 reply = "Отправь видео или ссылку на Reels, TikTok, YouTube и т.д."
-
             elif text.lower() == '/pay':
                 reply = "Оплатить можно тут: https://yourpaymentpage.com"
-
             elif re.search(r'https?://[^\s]+', text):
                 download_url = f"https://rocketcontentbot.onrender.com/download?url={text}"
                 try:

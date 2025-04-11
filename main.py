@@ -45,8 +45,8 @@ def telegram_webhook():
         message = data['message']
     if 'video' in message or 'document' in message:
         if user_states.get(chat_id) == 'transcribe':
-        handle_transcribe_input(chat_id, message)
-        return
+            handle_transcribe_input(chat_id, message)
+            return
 
     if 'text' in message:
         text = message['text']

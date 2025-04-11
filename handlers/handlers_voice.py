@@ -23,33 +23,34 @@ def handle_voice(chat_id):
 
 def handle_voice_transcription(chat_id, file_id):
     try:
-        # 1. Получаем file_path по file_id
+        print("📥 Получен file_id:", file_id)
+
+        # Получаем file_path
         file_info = requests.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}").json()
         file_path = file_info['result']['file_path']
-
-        # 2. Скачиваем файл
         file_url = f"{TELEGRAM_FILE_API}/{file_path}"
-        audio_content = requests.get(file_url).content
+        print("🔗 Скачивание по ссылке:", file_url)
 
+        # Скачиваем файл
+        audio_content = requests.get(file_url).content
         local_filename = "voice.ogg"
         with open(local_filename, "wb") as f:
             f.write(audio_content)
 
-        # 3. Отправляем в Whisper
+        # Отправляем в Whisper
+        print("📤 Отправка в Whisper...")
         with open(local_filename, "rb") as f:
             response = requests.post(
                 "https://api.openai.com/v1/audio/transcriptions",
-                headers={
-                    "Authorization": f"Bearer {OPENAI_API_KEY}"
-                },
+                headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
                 files={"file": f},
                 data={"model": "whisper-1"}
             )
 
         result = response.json()
-        text = result.get("text", "❌ Не удалось распознать речь.")
+        print("✅ Ответ от Whisper:", result)
 
-        # 4. Отправляем результат в Telegram
+        text = result.get("text", "❌ Не удалось распознать речь.")
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
             'text': f"📝 Расшифровка:\n{text}"
@@ -60,3 +61,4 @@ def handle_voice_transcription(chat_id, file_id):
             'chat_id': chat_id,
             'text': f"❌ Ошибка обработки аудио: {e}"
         })
+

@@ -113,6 +113,8 @@ def telegram_webhook():
         
         elif query_data == 'rewrite_transcript':
             send_message(chat_id, "✍️ Окей, запускаю рерайт текста!")
+            handle_rewrite_transcript(chat_id)
+
         
         elif query_data == 'make_reels':
             send_message(chat_id, "🎬 Начинаю сборку Reels.")

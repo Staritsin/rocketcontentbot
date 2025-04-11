@@ -43,10 +43,10 @@ def generate_platform_post(chat_id, platform):
     elif platform == 'spam':
         preview = last_text[:300].strip()
         text = (
-    f"📬 Спам-рассылка:\n\n"
-    f"**Заголовок:** {preview[:50]}...\n"
-    f"**Текст:** {preview}\n"
-    f"[📌 Подробнее](https://your-link.com)"
+            f"📬 Спам-рассылка:\n\n"
+            f"**Заголовок:** {preview[:50]}...\n"
+            f"**Текст:** {preview}\n"
+            f"[📌 Подробнее](https://your-link.com)"
 )
 
 

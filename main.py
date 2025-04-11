@@ -140,7 +140,7 @@ def telegram_webhook():
 
     return jsonify(success=True)
 
-    elif 'callback_query' in data:
+    if 'callback_query' in data:
         callback = data['callback_query']
         chat_id = callback['message']['chat']['id']
         query_data = callback['data']

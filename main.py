@@ -94,6 +94,11 @@ def telegram_webhook():
         message = data['message']
         chat_id = message['chat']['id']
 
+        if 'voice' in message or 'audio' in message:
+            file_id = message['voice']['file_id'] if 'voice' in message else message['audio']['file_id']
+            handle_voice_transcription(chat_id, file_id)
+            return jsonify(success=True)
+
         if 'video' in message or 'document' in message:
             if user_states.get(chat_id) == 'transcribe':
                 handle_transcribe_input(chat_id, message)

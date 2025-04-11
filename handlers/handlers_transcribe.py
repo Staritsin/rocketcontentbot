@@ -1,6 +1,6 @@
 # handlers/handlers_reels.py
 
-from utils import send_message
+from handlers.utils import send_message
 
 # Хранилище состояний пользователей
 user_states = {}

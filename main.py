@@ -44,7 +44,7 @@ def telegram_webhook():
         chat_id = data['message']['chat']['id']
         message = data['message']
 
-        if 'text' in message:
+    if 'text' in message:
         text = message['text']
 
     # Если активен режим транскрибации

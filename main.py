@@ -54,22 +54,22 @@ def telegram_webhook():
 
 
     if text.lower() == '/start':
-                reply = (
-                    "Привет! 👋 Я — твой персональный AI-ассистент для создания и управления контентом! 🎯\n\n"
-                    "Вот что я могу:\n"
-                    "🎥 Работаю с видео: Reels, YouTube, Shorts, Telegram, VK\n"
-                    "🧠 Работаю с голосом: превращаю в текст голосовые и аудио\n"
-                    "✍️ Работаю с текстом: рерайт, генерация, сценарии\n"
-                    "🖼 Работаю с изображениями: создаю картинки по твоему запросу\n"
-                    "📅 Помогаю с публикациями и контент-планом\n"
-                    "📲 Могу создать Reels по ссылке/видео: транскрибация, рерайт, субтитры, генерация, обложка и постинг\n\n"
-                    "Как работать со мной:\n"
-                    "1. Нажми /menu, чтобы выбрать, что хочешь сделать.\n"
-                    "2. Загрузи видео или голосовое сообщение.\n"
-                    "3. Я обработаю материал и предложу варианты генерации или публикации.\n\n"
-                    "Готов начать? Жми /menu 😊"
-                )
-                send_message(chat_id, reply)
+        reply = (
+            "Привет! 👋 Я — твой персональный AI-ассистент для создания и управления контентом! 🎯\n\n"
+            "Вот что я могу:\n"
+            "🎥 Работаю с видео: Reels, YouTube, Shorts, Telegram, VK\n"
+            "🧠 Работаю с голосом: превращаю в текст голосовые и аудио\n"
+            "✍️ Работаю с текстом: рерайт, генерация, сценарии\n"
+            "🖼 Работаю с изображениями: создаю картинки по твоему запросу\n"
+            "📅 Помогаю с публикациями и контент-планом\n"
+            "📲 Могу создать Reels по ссылке/видео: транскрибация, рерайт, субтитры, генерация, обложка и постинг\n\n"
+            "Как работать со мной:\n"
+            "1. Нажми /menu, чтобы выбрать, что хочешь сделать.\n"
+            "2. Загрузи видео или голосовое сообщение.\n"
+            "3. Я обработаю материал и предложу варианты генерации или публикации.\n\n"
+            "Готов начать? Жми /menu 😊"
+        )
+        send_message(chat_id, reply)
 
     elif text.lower() == '/menu':
         keyboard = [
@@ -110,54 +110,54 @@ def telegram_webhook():
             'callback_query_id': callback_id
         })
 
-        if query_data == 'video':
-            handle_video(chat_id)
-        elif query_data == 'voice':
-            handle_voice(chat_id)
-        elif query_data == 'text':
-            handle_text(chat_id)
-        elif query_data == 'image':
-            handle_image(chat_id)
-        elif query_data == 'plan':
-            handle_plan(chat_id)
-        elif query_data == 'pay':
-            handle_pay(chat_id)
-        elif query_data == 'support':
-            handle_support(chat_id)
-        elif query_data == 'smart_reels':
-            send_message(chat_id, "📲 Умное создание Reels\nОтправь мне видео или ссылку. Я сделаю: транскрибацию, рерайт, субтитры, видео из шаблона, обложку и публикацию.\n\nВыбери действие:")
-            keyboard = [
-                [
-                    InlineKeyboardButton("🔤 Транскрибация", callback_data='transcribe'),
-                    InlineKeyboardButton("✍️ Рерайт", callback_data='rewrite')
-                ],
-                [
-                    InlineKeyboardButton("🧩 Видео из шаблона CapCut", callback_data='capcut'),
-                    InlineKeyboardButton("🎞 Субтитры", callback_data='subtitles')
-                ],
-                [
-                    InlineKeyboardButton("🖼 Обложка", callback_data='thumbnail'),
-                    InlineKeyboardButton("📤 Постинг", callback_data='publish')
-                ]
+    if query_data == 'video':
+        handle_video(chat_id)
+    elif query_data == 'voice':
+        handle_voice(chat_id)
+    elif query_data == 'text':
+        handle_text(chat_id)
+    elif query_data == 'image':
+        handle_image(chat_id)
+    elif query_data == 'plan':
+        handle_plan(chat_id)
+    elif query_data == 'pay':
+        handle_pay(chat_id)
+    elif query_data == 'support':
+        handle_support(chat_id)
+    elif query_data == 'smart_reels':
+        send_message(chat_id, "📲 Умное создание Reels\nОтправь мне видео или ссылку. Я сделаю: транскрибацию, рерайт, субтитры, видео из шаблона, обложку и публикацию.\n\nВыбери действие:")
+        keyboard = [
+            [
+                InlineKeyboardButton("🔤 Транскрибация", callback_data='transcribe'),
+                InlineKeyboardButton("✍️ Рерайт", callback_data='rewrite')
+            ],
+            [
+                InlineKeyboardButton("🧩 Видео из шаблона CapCut", callback_data='capcut'),
+                InlineKeyboardButton("🎞 Субтитры", callback_data='subtitles')
+            ],
+            [
+                InlineKeyboardButton("🖼 Обложка", callback_data='thumbnail'),
+                InlineKeyboardButton("📤 Постинг", callback_data='publish')
             ]
-            reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
-            requests.post(TELEGRAM_API_URL, json={
-                'chat_id': chat_id,
-                'text': 'Выбери, что сделать с видео 👇',
-                'reply_markup': reply_markup
-            })
-        elif query_data == 'transcribe':
-            handle_transcribe(chat_id)
-        elif query_data == 'rewrite':
-            handle_rewrite(chat_id)
-        elif query_data == 'capcut':
-            handle_capcut(chat_id)
-        elif query_data == 'subtitles':
-            handle_subtitles(chat_id)
-        elif query_data == 'thumbnail':
-            handle_thumbnail(chat_id)
-        elif query_data == 'publish':
-            handle_publish(chat_id)
+        ]
+        reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
+        requests.post(TELEGRAM_API_URL, json={
+            'chat_id': chat_id,
+            'text': 'Выбери, что сделать с видео 👇',
+            'reply_markup': reply_markup
+        })
+    elif query_data == 'transcribe':
+        handle_transcribe(chat_id)
+    elif query_data == 'rewrite':
+        handle_rewrite(chat_id)
+    elif query_data == 'capcut':
+        handle_capcut(chat_id)
+    elif query_data == 'subtitles':
+        handle_subtitles(chat_id)
+    elif query_data == 'thumbnail':
+        handle_thumbnail(chat_id)
+    elif query_data == 'publish':
+        handle_publish(chat_id)
 
     return jsonify(success=True)
 

@@ -35,7 +35,8 @@ def generate_platform_post(chat_id, platform):
         return
 
     if platform == 'instagram':
-        text = f"📸 Instagram пост:
+        text = f"📸 Instagram пост:\n\n{last_text}\n\n👉 Напиши в комменты, что думаешь!"
+
 
 {last_text}\n\n👉 Напиши в комменты, что думаешь!"
 

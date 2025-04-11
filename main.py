@@ -18,6 +18,8 @@ from handlers.handlers_support import handle_support
 from handlers.utils import TELEGRAM_API_URL
 from handlers.handlers_transcribe import handle_transcribe_mode, handle_transcribe_input
 from handlers.handlers_voice import handle_voice_transcription
+from handlers.handlers_post import handle_post_platform_selection, generate_platform_post
+
 
 
 app = Flask(__name__)
@@ -78,22 +80,39 @@ def telegram_webhook():
         elif query_data == 'transcribe':
             user_states[chat_id] = 'transcribe'
             send_message(chat_id, "✉️ Отправь видео или текст для транскрибации.")
+        
         elif query_data == 'rewrite':
             handle_rewrite(chat_id)
+        
         elif query_data == 'capcut':
             handle_capcut(chat_id)
+        
         elif query_data == 'subtitles':
             handle_subtitles(chat_id)
+        
         elif query_data == 'thumbnail':
             handle_thumbnail(chat_id)
+        
         elif query_data == 'publish':
             handle_publish(chat_id)
-
+        
+        elif query_data == 'use_as_post':
+            handle_post_platform_selection(chat_id)
+        
+        elif query_data == 'post_instagram':
+            generate_platform_post(chat_id, 'instagram')
+        
+        elif query_data == 'post_telegram':
+            generate_platform_post(chat_id, 'telegram')
+        
+        elif query_data == 'post_spam':
+            generate_platform_post(chat_id, 'spam')
+        
+        elif query_data == 'post_vk':
+            generate_platform_post(chat_id, 'vk')
+        
         elif query_data == 'rewrite_transcript':
             send_message(chat_id, "✍️ Окей, запускаю рерайт текста!")
-
-        elif query_data == 'use_as_post':
-            send_message(chat_id, "📤 Готовлю текст как пост.")
         
         elif query_data == 'make_reels':
             send_message(chat_id, "🎬 Начинаю сборку Reels.")
@@ -102,8 +121,8 @@ def telegram_webhook():
             send_message(chat_id, "🌟 Рад, что всё получилось!")
         
         elif query_data == 'menu':
-            # Здесь можно вставить вызов /menu или его имитацию
             send_message(chat_id, "🔙 Возвращаю в меню. Напиши /menu")
+
 
         
         return jsonify(success=True)

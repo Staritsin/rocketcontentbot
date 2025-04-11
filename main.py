@@ -89,6 +89,23 @@ def telegram_webhook():
         elif query_data == 'publish':
             handle_publish(chat_id)
 
+        elif query_data == 'rewrite_transcript':
+            send_message(chat_id, "✍️ Окей, запускаю рерайт текста!")
+
+        elif query_data == 'use_as_post':
+            send_message(chat_id, "📤 Готовлю текст как пост.")
+        
+        elif query_data == 'make_reels':
+            send_message(chat_id, "🎬 Начинаю сборку Reels.")
+        
+        elif query_data == 'success':
+            send_message(chat_id, "🌟 Рад, что всё получилось!")
+        
+        elif query_data == 'menu':
+            # Здесь можно вставить вызов /menu или его имитацию
+            send_message(chat_id, "🔙 Возвращаю в меню. Напиши /menu")
+
+        
         return jsonify(success=True)
 
     # === MESSAGE ===

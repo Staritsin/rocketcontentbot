@@ -37,13 +37,8 @@ def generate_platform_post(chat_id, platform):
     if platform == 'instagram':
         text = f"📸 Instagram пост:\n\n{last_text}\n\n👉 Напиши в комменты, что думаешь!"
 
-
-{last_text}\n\n👉 Напиши в комменты, что думаешь!"
-
     elif platform == 'telegram':
-        text = f"🗣 Telegram пост:
-
-{last_text}"
+        text = f"🗣 Telegram пост:{last_text}"
 
     elif platform == 'spam':
         preview = last_text[:300].strip()

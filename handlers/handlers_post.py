@@ -38,22 +38,19 @@ def generate_platform_post(chat_id, platform):
         text = f"📸 Instagram пост:\n\n{last_text}\n\n👉 Напиши в комменты, что думаешь!"
 
     elif platform == 'telegram':
-        text = f"🗣 Telegram пост:{last_text}"
+        text = f"🗣 Telegram пост:\n\n{last_text}"
 
     elif platform == 'spam':
         preview = last_text[:300].strip()
         text = (
-            f"📬 Спам-рассылка:\n\n"
+            "📬 Спам-рассылка:\n\n"
             f"**Заголовок:** {preview[:50]}...\n"
             f"**Текст:** {preview}\n"
-            f"[📌 Подробнее](https://your-link.com)"
-)
-
+            "[📌 Подробнее](https://your-link.com)"
+        )
 
     elif platform == 'vk':
-        text = f"📢 Пост для ВКонтакте:
-
-{last_text}\n\n#контент #бот #искусственныйинтеллект"
+        text = f"📢 Пост для ВКонтакте:\n\n{last_text}\n\n#контент #бот #искусственныйинтеллект"
 
     else:
         text = "❌ Неизвестная платформа"
@@ -62,3 +59,4 @@ def generate_platform_post(chat_id, platform):
         'chat_id': chat_id,
         'text': text
     })
+

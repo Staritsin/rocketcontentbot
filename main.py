@@ -39,7 +39,13 @@ def index():
 @app.route('/telegram', methods=['POST'])
 def telegram_webhook():
     data = request.get_json()
+  
+    print("🔥 Получены данные от Telegram:", data)
 
+    if 'message' in data:
+        chat_id = data['message']['chat']['id']
+        send_message(chat_id, "✅ Бот получил сообщение!")
+          
     # Обработка callback кнопок
     if 'callback_query' in data:
         callback = data['callback_query']

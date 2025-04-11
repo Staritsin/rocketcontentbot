@@ -19,6 +19,11 @@ from handlers.handlers_plan import handle_plan
 from handlers.handlers_pay import handle_pay
 from handlers.handlers_support import handle_support
 from handlers.utils import TELEGRAM_API_URL  # или передай как параметр
+from handlers.handlers_transcribe import (
+    handle_transcribe_mode,
+    handle_transcribe_input
+)
+
 
 
 app = Flask(__name__)
@@ -40,7 +45,13 @@ def telegram_webhook():
         message = data['message']
 
         if 'text' in message:
-            text = message['text']
+    text = message['text']
+
+    # Если активен режим транскрибации
+    if user_states.get(chat_id) == 'transcribe':
+        handle_transcribe_input(chat_id, text)
+        return
+
 
             if text.lower() == '/start':
                 reply = (

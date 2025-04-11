@@ -17,6 +17,8 @@ from handlers.handlers_pay import handle_pay
 from handlers.handlers_support import handle_support
 from handlers.utils import TELEGRAM_API_URL
 from handlers.handlers_transcribe import handle_transcribe_mode, handle_transcribe_input
+from handlers.handlers_voice import handle_voice_transcription
+
 
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')

@@ -8,10 +8,12 @@ OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}'
 TELEGRAM_FILE_API = f'https://api.telegram.org/file/bot{BOT_TOKEN}'
 
+# Хранилище состояния пользователя
+user_states = {}
 
 def handle_voice(chat_id):
     text = (
-        "🎧 Работа с голосом\n"
+        "🎙️ Работа с голосом\n"
         "Отправь мне голосовое сообщение — я превращу его в текст с помощью нейросети Whisper.\n"
         "Затем ты сможешь сделать рерайт или использовать текст для генерации поста или видео."
     )
@@ -20,10 +22,9 @@ def handle_voice(chat_id):
         'text': text
     })
 
-
 def handle_voice_transcription(chat_id, file_id):
     try:
-        print("📥 Получен file_id:", file_id)
+        print("📅 Получен file_id:", file_id)
 
         file_info = requests.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}").json()
         file_path = file_info['result']['file_path']
@@ -50,15 +51,18 @@ def handle_voice_transcription(chat_id, file_id):
 
         text = result.get("text", "❌ Не удалось распознать речь.")
 
+        # Сохраняем в состояние пользователя
+        user_states[chat_id] = {'last_transcript': text}
+
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
             'text': f"📝 Расшифровка:\n{text}"
         })
 
-        # Добавляем Inline-кнопки
+        # Кнопки после расшифровки
         keyboard = [
             [InlineKeyboardButton("✍️ Сделать рерайт", callback_data='rewrite_transcript')],
-            [InlineKeyboardButton("📤 Использовать как пост", callback_data='use_as_post')],
+            [InlineKeyboardButton("📤 Использовать как пост", callback_data='select_post_platform')],
             [InlineKeyboardButton("🎬 Сделать Reels", callback_data='make_reels')],
             [InlineKeyboardButton("🌟 Всё получилось", callback_data='success')],
             [InlineKeyboardButton("🔙 Вернуться в меню", callback_data='menu')]
@@ -76,4 +80,39 @@ def handle_voice_transcription(chat_id, file_id):
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
             'text': f"❌ Ошибка обработки аудио: {e}"
+        })
+
+def handle_rewrite_transcript(chat_id):
+    try:
+        last_text = user_states.get(chat_id, {}).get('last_transcript')
+        if not last_text:
+            raise ValueError("Текст не найден для рерайта")
+
+        prompt = f"Сделай рерайт следующего текста, сохранив смысл и структуру:\n\n{last_text}"
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {OPENAI_API_KEY}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "gpt-3.5-turbo",
+                "messages": [
+                    {"role": "system", "content": "Ты опытный копирайтер."},
+                    {"role": "user", "content": prompt}
+                ]
+            }
+        )
+        result = response.json()
+        rewritten = result['choices'][0]['message']['content']
+
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"✍️ Рерайт:\n{rewritten}"
+        })
+
+    except Exception as e:
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"❌ Ошибка рерайта: {e}"
         })

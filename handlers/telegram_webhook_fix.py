@@ -4,12 +4,19 @@ import math
 import shutil
 from tempfile import mkdtemp
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+from flask import send_file
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}'
 
 # Хранилище состояния пользователя
 user_states = {}
+
+# === ЛОГ-ФУНКЦИЯ ===
+def log_transcription_progress(chat_id, message):
+    os.makedirs("logs", exist_ok=True)
+    with open("logs/transcribe.log", "a", encoding="utf-8") as log_file:
+        log_file.write(f"[chat_id: {chat_id}] {message}\n")
 
 def handle_post_platform_selection(chat_id):
     text = "Выбери, куда хочешь опубликовать пост 👇"
@@ -18,6 +25,7 @@ def handle_post_platform_selection(chat_id):
         [InlineKeyboardButton("🗣 Telegram", callback_data='post_telegram')],
         [InlineKeyboardButton("📬 Спам-рассылка", callback_data='post_spam')],
         [InlineKeyboardButton("📢 ВКонтакте", callback_data='post_vk')],
+        [InlineKeyboardButton("📁 Скачать результат", callback_data='download_transcript')],
         [InlineKeyboardButton("🔙 Вернуться в меню", callback_data='menu')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard).to_dict()
@@ -112,10 +120,14 @@ def handle_voice_transcription(chat_id, file_path):
         with open(input_path, "wb") as f:
             f.write(file_response.content)
 
+        log_transcription_progress(chat_id, f"Файл загружен: {input_path}")
+
         probe_cmd = f"ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {input_path}"
         duration = float(os.popen(probe_cmd).read().strip())
         chunk_duration = 60
         total_chunks = math.ceil(duration / chunk_duration)
+
+        log_transcription_progress(chat_id, f"Общая длительность: {duration} сек. Будет {total_chunks} фрагментов")
 
         full_text = []
 
@@ -135,6 +147,8 @@ def handle_voice_transcription(chat_id, file_path):
                 result = response.json()
                 full_text.append(result.get("text", ""))
 
+            log_transcription_progress(chat_id, f"Обработан фрагмент {i + 1}/{total_chunks}")
+
             requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
                 'chat_id': chat_id,
                 'text': f"⏳ Прогресс: {i + 1}/{total_chunks} минут обработано..."
@@ -143,15 +157,43 @@ def handle_voice_transcription(chat_id, file_path):
         final_text = " ".join(full_text).strip()
         user_states[chat_id] = {'last_transcript': final_text}
 
+        os.makedirs("transcripts", exist_ok=True)
+        result_path = f"transcripts/result_{chat_id}.txt"
+        with open(result_path, "w", encoding="utf-8") as out:
+            out.write(final_text)
+
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
             'text': f"📝 Расшифровка:\n{final_text}"
         })
 
+        keyboard = [[InlineKeyboardButton("📁 Скачать результат", callback_data='download_transcript')]]
+        reply_markup = InlineKeyboardMarkup(keyboard).to_dict()
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': "Что дальше? 👇",
+            'reply_markup': reply_markup
+        })
+
         shutil.rmtree(temp_dir)
 
     except Exception as e:
+        log_transcription_progress(chat_id, f"❌ Ошибка транскрибации: {e}")
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
             'text': f"❌ Ошибка транскрибации: {e}"
+        })
+
+def send_transcript_file(chat_id):
+    result_path = f"transcripts/result_{chat_id}.txt"
+    if os.path.exists(result_path):
+        requests.post(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument",
+            files={"document": open(result_path, "rb")},
+            data={"chat_id": chat_id}
+        )
+    else:
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': "❌ Файл не найден. Попробуй сначала сделать транскрибацию."
         })

@@ -6,7 +6,7 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}'
 
 # Хранилище состояния пользователя
-user_states = {}
+from handlers.state import user_states
 
 def handle_post_platform_selection(chat_id):
     text = "Выбери, куда хочешь опубликовать пост 👇"

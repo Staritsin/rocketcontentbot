@@ -76,6 +76,9 @@ def handle_voice_transcription(chat_id, file_id):
             'reply_markup': reply_markup
         })
 
+        from handlers.telegram_webhook_fix import ask_for_rating
+        ask_for_rating(chat_id)
+
     except Exception as e:
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,

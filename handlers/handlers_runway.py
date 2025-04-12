@@ -13,6 +13,53 @@ from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
+RUNWAY_API_KEY = os.environ.get("RUNWAY_API_KEY")
+RUNWAY_API_URL = "https://api.runwayml.com/v1/"
+
+headers = {
+    "Authorization": f"Bearer {RUNWAY_API_KEY}",
+    "Content-Type": "application/json"
+}
+
+
+def test_runway_generation(chat_id):
+    prompt = "A futuristic cyberpunk city at night, flying cars, neon lights"
+
+    payload = {
+        "prompt": prompt,
+        "num_frames": 24,
+        "width": 512,
+        "height": 512,
+        "seed": 42
+    }
+
+    try:
+        response = requests.post(
+            RUNWAY_API_URL + "videos",
+            headers=headers,
+            json=payload
+        )
+
+        result = response.json()
+
+        if response.status_code == 200:
+            video_url = result.get("video_url", "⚠️ Видео не найдено")
+            send_message(chat_id, f"🎬 Готово! Вот видео:\n{video_url}")
+        else:
+            send_message(chat_id, f"❌ Ошибка RunwayML: {result}")
+    except Exception as e:
+        send_message(chat_id, f"❌ Ошибка при подключении к RunwayML: {e}")
+
+
+def send_message(chat_id, text):
+    from handlers.utils import TELEGRAM_API_URL
+    requests.post(f"{TELEGRAM_API_URL}/sendMessage", json={
+        "chat_id": chat_id,
+        "text": text
+    })
+
+
+
 
 
 def handle_capcut(chat_id):

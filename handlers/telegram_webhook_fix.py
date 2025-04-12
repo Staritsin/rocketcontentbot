@@ -130,3 +130,22 @@ def handle_callback_download_transcript(query_data, chat_id):
         send_transcript_file(chat_id)
         return True
     return False
+
+# Поддержка видео и ссылок на Reels / YouTube
+
+def download_media(source_url_or_path):
+    temp_dir = mkdtemp()
+    output_path = os.path.join(temp_dir, 'media.mp4')
+
+    if source_url_or_path.startswith("http"):
+        ydl_opts = {
+            'outtmpl': output_path,
+            'format': 'mp4/bestaudio/best',
+            'quiet': True,
+        }
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([source_url_or_path])
+    else:
+        shutil.copy(source_url_or_path, output_path)
+
+    return output_path

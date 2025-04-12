@@ -53,7 +53,6 @@ def clear_progress_message(chat_id):
         except:
             pass
 
-
 def handle_post_platform_selection(chat_id):
     text = "Выбери, куда хочешь опубликовать пост 👇"
     keyboard = [

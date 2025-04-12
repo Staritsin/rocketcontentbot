@@ -112,6 +112,20 @@ def handle_rewrite_transcript(chat_id):
             'text': f"❌ Ошибка рерайта: {e}"
         })
 
+def send_transcript_file(chat_id):
+    result_path = f"transcripts/result_{chat_id}.txt"
+    if os.path.exists(result_path):
+        requests.post(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument",
+            files={"document": open(result_path, "rb")},
+            data={"chat_id": chat_id}
+        )
+    else:
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': "❌ Файл не найден. Попробуй сначала сделать транскрибацию."
+        })
+
 def handle_voice_transcription(chat_id, file_path):
     try:
         # Проверка: установлен ли ffprobe
@@ -184,11 +198,16 @@ def handle_voice_transcription(chat_id, file_path):
             'text': f"📝 Расшифровка:\n{final_text}"
         })
 
-        keyboard = [[InlineKeyboardButton("📁 Скачать результат", callback_data='download_transcript')]]
+        keyboard = [
+            [InlineKeyboardButton("✍️ Сделать рерайт", callback_data='rewrite_transcript')],
+            [InlineKeyboardButton("📤 Использовать как пост", callback_data='use_as_post')],
+            [InlineKeyboardButton("📁 Скачать результат", callback_data='download_transcript')],
+            [InlineKeyboardButton("🔙 В меню", callback_data='menu')]
+        ]
         reply_markup = InlineKeyboardMarkup(keyboard).to_dict()
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
-            'text': "Что дальше? 👇",
+            'text': "Что делаем дальше? 👇",
             'reply_markup': reply_markup
         })
 
@@ -199,18 +218,4 @@ def handle_voice_transcription(chat_id, file_path):
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
             'text': f"❌ Ошибка транскрибации: {e}"
-        })
-
-def send_transcript_file(chat_id):
-    result_path = f"transcripts/result_{chat_id}.txt"
-    if os.path.exists(result_path):
-        requests.post(
-            f"https://api.telegram.org/bot{BOT_TOKEN}/sendDocument",
-            files={"document": open(result_path, "rb")},
-            data={"chat_id": chat_id}
-        )
-    else:
-        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
-            'chat_id': chat_id,
-            'text': "❌ Файл не найден. Попробуй сначала сделать транскрибацию."
         })

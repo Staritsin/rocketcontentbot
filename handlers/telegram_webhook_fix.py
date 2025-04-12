@@ -61,6 +61,7 @@ def handle_post_platform_selection(chat_id):
         [InlineKeyboardButton("📬 Спам-рассылка", callback_data='post_spam')],
         [InlineKeyboardButton("📢 ВКонтакте", callback_data='post_vk')],
         [InlineKeyboardButton("📁 Скачать результат", callback_data='download_transcript')],
+        [InlineKeyboardButton("🎬 Транскрибировать видео", callback_data='transcribe_video')],
         [InlineKeyboardButton("🔙 Вернуться в меню", callback_data='menu')]
     ]
     reply_markup = InlineKeyboardMarkup(keyboard).to_dict()

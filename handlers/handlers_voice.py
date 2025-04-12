@@ -1,7 +1,7 @@
 import requests
 import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-import handlers.state as state
+from handlers.state import user_states
 from handlers.telegram_webhook_fix import ask_for_rating
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')

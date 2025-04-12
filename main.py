@@ -181,6 +181,10 @@ def telegram_webhook():
                     'text': 'Что будем делать? 👇',
                     'reply_markup': reply_markup
                 })
+                elif text.lower() == '/stats':
+                    from handlers.telegram_webhook_fix import handle_stats_request
+                    handle_stats_request(chat_id)
+
             else:
                 send_message(chat_id, "✅ Бот получил сообщение!")
 

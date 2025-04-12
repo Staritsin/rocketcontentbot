@@ -123,6 +123,8 @@ def send_transcript_file(chat_id):
             'text': "❌ Файл не найден. Попробуй сначала сделать транскрибацию."
         })
 
+# Новый блок: обработка callback для скачивания
+
 def handle_callback_download_transcript(query_data, chat_id):
     if query_data == 'download_transcript':
         send_transcript_file(chat_id)

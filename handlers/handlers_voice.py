@@ -9,7 +9,7 @@ TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}'
 TELEGRAM_FILE_API = f'https://api.telegram.org/file/bot{BOT_TOKEN}'
 
 # Хранилище состояния пользователя
-user_states = {}
+from handlers.state import user_states
 
 def handle_voice(chat_id):
     text = (

@@ -17,7 +17,7 @@ def handle_post_platform_selection(chat_id):
         [InlineKeyboardButton("📢 ВКонтакте", callback_data='post_vk')],
         [InlineKeyboardButton("🔙 Вернуться в меню", callback_data='menu')]
     ]
-    reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
+    reply_markup = InlineKeyboardMarkup(keyboard).to_dict()
 
     requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
         'chat_id': chat_id,
@@ -43,10 +43,10 @@ def generate_platform_post(chat_id, platform):
     elif platform == 'spam':
         preview = last_text[:300].strip()
         text = (
-            "📬 Спам-рассылка:\n\n"
+            f"📬 Спам-рассылка:\n\n"
             f"**Заголовок:** {preview[:50]}...\n"
             f"**Текст:** {preview}\n"
-            "[📌 Подробнее](https://your-link.com)"
+            f"[📌 Подробнее](https://your-link.com)"
         )
 
     elif platform == 'vk':
@@ -60,3 +60,43 @@ def generate_platform_post(chat_id, platform):
         'text': text
     })
 
+def handle_rewrite_transcript(chat_id):
+    import json
+
+    last_text = user_states.get(chat_id, {}).get('last_transcript')
+    if not last_text:
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': "❌ Текст для рерайта не найден. Сначала сделай транскрибацию."
+        })
+        return
+
+    prompt = f"Сделай рерайт следующего текста, сохранив смысл и структуру:\n\n{last_text}"
+    try:
+        response = requests.post(
+            "https://api.openai.com/v1/chat/completions",
+            headers={
+                "Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}",
+                "Content-Type": "application/json"
+            },
+            json={
+                "model": "gpt-3.5-turbo",
+                "messages": [
+                    {"role": "system", "content": "Ты опытный копирайтер."},
+                    {"role": "user", "content": prompt}
+                ]
+            }
+        )
+        result = response.json()
+        rewritten = result['choices'][0]['message']['content']
+
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"✍️ Рерайт:\n{rewritten}"
+        })
+
+    except Exception as e:
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"❌ Ошибка рерайта: {e}"
+        })

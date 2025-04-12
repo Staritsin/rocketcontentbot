@@ -18,8 +18,13 @@ from handlers.handlers_support import handle_support
 from handlers.utils import TELEGRAM_API_URL
 from handlers.handlers_transcribe import handle_transcribe_mode, handle_transcribe_input
 from handlers.handlers_voice import handle_voice_transcription
-from handlers.handlers_post import handle_post_platform_selection, generate_platform_post, handle_rewrite_transcript
-from handlers.telegram_webhook_fix import handle_voice_transcription
+from handlers.telegram_webhook_fix import (
+    handle_post_platform_selection,
+    generate_platform_post,
+    handle_rewrite_transcript,
+    handle_voice_transcription
+)
+
 
 
 

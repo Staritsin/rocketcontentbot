@@ -23,7 +23,7 @@ def handle_rewrite(chat_id):
 
 def handle_rewrite_transcript(chat_id):
     try:
-        last_text = state.user_states.get(chat_id, {}).get('last_transcript')
+        last_text = user_states.get(chat_id, {}).get('last_transcript')
         if not last_text:
             raise ValueError("Текст не найден для рерайта")
 

@@ -149,3 +149,17 @@ def download_media(source_url_or_path):
         shutil.copy(source_url_or_path, output_path)
 
     return output_path
+
+# ВСТАВКА: интеграция download_media в обработчик транскрибации
+
+def handle_transcription_from_any_source(chat_id, source):
+    try:
+        file_path = download_media(source)
+        from handlers.handlers_voice import handle_voice_transcription
+        handle_voice_transcription(chat_id, file_path)
+    except Exception as e:
+        log_transcription_progress(chat_id, f"❌ Ошибка загрузки или транскрибации: {e}")
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"❌ Ошибка: {e}"
+        })

@@ -19,6 +19,26 @@ def log_transcription_progress(chat_id, message):
     with open("logs/transcribe.log", "a", encoding="utf-8") as log_file:
         log_file.write(f"[chat_id: {chat_id}] {message}\n")
 
+# === ОБНОВЛЕНИЕ СООБЩЕНИЯ ПРОГРЕССА ===
+def update_progress_message(chat_id, text):
+    state = user_states.setdefault(chat_id, {})
+    message_id = state.get("progress_message_id")
+
+    if message_id:
+        requests.post(f'{TELEGRAM_API_URL}/editMessageText', json={
+            'chat_id': chat_id,
+            'message_id': message_id,
+            'text': text
+        })
+    else:
+        response = requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': text
+        })
+        message_id = response.json().get("result", {}).get("message_id")
+        if message_id:
+            state["progress_message_id"] = message_id
+
 def handle_post_platform_selection(chat_id):
     text = "Выбери, куда хочешь опубликовать пост 👇"
     keyboard = [
@@ -123,15 +143,11 @@ def send_transcript_file(chat_id):
             'text': "❌ Файл не найден. Попробуй сначала сделать транскрибацию."
         })
 
-# Новый блок: обработка callback для скачивания
-
 def handle_callback_download_transcript(query_data, chat_id):
     if query_data == 'download_transcript':
         send_transcript_file(chat_id)
         return True
     return False
-
-# Поддержка видео и ссылок на Reels / YouTube
 
 def download_media(source_url_or_path):
     temp_dir = mkdtemp()
@@ -150,13 +166,12 @@ def download_media(source_url_or_path):
 
     return output_path
 
-# ВСТАВКА: интеграция download_media в обработчик транскрибации
-
 def handle_transcription_from_any_source(chat_id, source):
     try:
         file_path = download_media(source)
         from handlers.handlers_voice import handle_voice_transcription
         handle_voice_transcription(chat_id, file_path)
+        user_states[chat_id].pop("progress_message_id", None)
     except Exception as e:
         log_transcription_progress(chat_id, f"❌ Ошибка загрузки или транскрибации: {e}")
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={

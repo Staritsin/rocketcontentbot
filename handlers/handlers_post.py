@@ -6,7 +6,7 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}'
 
 # Хранилище состояния пользователя
-from handlers.state import user_states
+user_states = {}
 
 def handle_post_platform_selection(chat_id):
     text = "Выбери, куда хочешь опубликовать пост 👇"
@@ -57,7 +57,8 @@ def generate_platform_post(chat_id, platform):
 
     requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
         'chat_id': chat_id,
-        'text': text
+        'text': text,
+        'parse_mode': 'Markdown'
     })
 
 def handle_rewrite_transcript(chat_id):

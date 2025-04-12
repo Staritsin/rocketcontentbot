@@ -103,38 +103,39 @@ def handle_rewrite_transcript(chat_id):
             'text': f"❌ Ошибка рерайта: {e}"
         })
 
-def handle_voice_transcription(chat_id, file_path):
+def handle_voice_transcription(chat_id, file_id):
     try:
-        audio = AudioSegment.from_file(file_path)
-        chunk_length_ms = 60 * 1000
-        total_chunks = math.ceil(len(audio) / chunk_length_ms)
-        full_text = []
+        # Получаем ссылку на файл
+        file_info = requests.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}").json()
+        file_path = file_info['result']['file_path']
+        file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
 
-        for i in range(total_chunks):
-            chunk = audio[i * chunk_length_ms: (i + 1) * chunk_length_ms]
-            chunk_path = f"chunk_{i}.mp3"
-            chunk.export(chunk_path, format="mp3")
+        # Скачиваем файл
+        local_path = "voice.ogg"
+        audio_data = requests.get(file_url).content
+        with open(local_path, "wb") as f:
+            f.write(audio_data)
 
-            with open(chunk_path, "rb") as f:
-                response = requests.post(
-                    "https://api.openai.com/v1/audio/transcriptions",
-                    headers={"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}"},
-                    files={"file": f},
-                    data={"model": "whisper-1"}
-                )
-                result = response.json()
-                full_text.append(result.get("text", ""))
+        # Отправляем в Whisper
+        with open(local_path, "rb") as f:
+            response = requests.post(
+                "https://api.openai.com/v1/audio/transcriptions",
+                headers={"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}"},
+                files={"file": f},
+                data={"model": "whisper-1"}
+            )
+        result = response.json()
+        text = result.get("text", "❌ Не удалось распознать речь.")
 
-        final_text = " ".join(full_text).strip()
-        user_states[chat_id] = {'last_transcript': final_text}
+        user_states[chat_id] = {'last_transcript': text}
 
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
-            'text': f"📝 Расшифровка:\n{final_text}"
+            'text': f"📝 Расшифровка:\n{text}"
         })
 
     except Exception as e:
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
-            'text': f"❌ Ошибка обработки аудио: {e}"
+            'text': f"❌ Ошибка транскрибации: {e}"
         })

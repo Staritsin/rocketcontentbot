@@ -1,6 +1,8 @@
 import requests
 import os
 import math
+import shutil
+from tempfile import mkdtemp
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')

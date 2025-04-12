@@ -113,29 +113,34 @@ def handle_rewrite_transcript(chat_id):
         })
 
 def handle_voice_transcription(chat_id, file_path):
-    
-    # Проверка: установлен ли ffprobe
-    ffprobe_check = os.popen("which ffprobe").read().strip()
-    if not ffprobe_check:
-        raise EnvironmentError("ffprobe не установлен. Установи его в Render через 'apt install ffmpeg'")
-        
     try:
+        # Проверка: установлен ли ffprobe
+        ffprobe_check = os.popen("which ffprobe").read().strip()
+        if not ffprobe_check:
+            raise EnvironmentError("ffprobe не установлен. Установи его в Render через 'apt install ffmpeg'")
+
         temp_dir = mkdtemp()
         input_path = os.path.join(temp_dir, "input.ogg")
-        file_response = requests.get(f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}")
+
+        # Получение реальной ссылки на файл по file_id
+        get_url = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_path}")
+        file_url = "https://api.telegram.org/file/bot" + BOT_TOKEN + "/" + get_url.json()['result']['file_path']
+        file_response = requests.get(file_url)
+
         with open(input_path, "wb") as f:
             f.write(file_response.content)
+
+        if os.path.getsize(input_path) < 1000:
+            raise ValueError("Файл пустой или не скачался полностью.")
 
         log_transcription_progress(chat_id, f"Файл загружен: {input_path}")
 
         probe_cmd = f"ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {input_path}"
         duration_str = os.popen(probe_cmd).read().strip()
-
         if not duration_str:
             raise ValueError("ffprobe не вернул длительность — проверь формат или установку ffmpeg")
 
         duration = float(duration_str)
-
         chunk_duration = 60
         total_chunks = math.ceil(duration / chunk_duration)
 

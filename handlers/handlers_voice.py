@@ -43,7 +43,7 @@ def handle_voice_transcription(chat_id, file_id):
 
         result = response.json()
         text = result.get("text", "❌ Не удалось распознать речь.")
-        user_states[chat_id] = {'last_transcript': text}
+        user_states.setdefault(chat_id, {})['last_transcript'] = text
 
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,

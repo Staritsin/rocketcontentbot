@@ -1,7 +1,7 @@
 import requests
 import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
-from handlers.state import user_states
+import handlers.state as state
 from handlers.telegram_webhook_fix import ask_for_rating
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
@@ -78,7 +78,7 @@ def handle_voice_transcription(chat_id, file_id):
 
 def handle_rewrite_transcript(chat_id):
     try:
-        last_text = user_states.get(chat_id, {}).get('last_transcript')
+        last_text = state.user_states.get(chat_id, {}).get('last_transcript')
         if not last_text:
             raise ValueError("Текст не найден для рерайта")
 

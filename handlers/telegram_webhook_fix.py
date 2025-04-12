@@ -6,6 +6,29 @@ import yt_dlp
 from tempfile import mkdtemp
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from flask import send_file
+import json
+
+stats_file = "stats.json"
+
+def load_stats():
+    if os.path.exists(stats_file):
+        with open(stats_file, "r") as f:
+            return json.load(f)
+    return {"users": {}, "ratings": []}
+
+def save_stats(stats):
+    with open(stats_file, "w") as f:
+        json.dump(stats, f, indent=2)
+
+stats = load_stats()
+
+def record_rating(chat_id, rating):
+    chat_id = str(chat_id)
+    stats["users"].setdefault(chat_id, {"actions": [], "rating": None})
+    stats["users"][chat_id]["rating"] = rating
+    stats["ratings"].append(rating)
+    save_stats(stats)
+
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}'
@@ -193,3 +216,49 @@ def handle_transcription_from_any_source(chat_id, source):
             'chat_id': chat_id,
             'text': f"❌ Ошибка: {e}"
         })
+
+def handle_callback_rating(data, chat_id):
+    if data.startswith("rate_"):
+        rating = int(data.split("_")[1])
+        from handlers.telegram_webhook_fix import record_rating  # или вынеси наверх, если часто используешь
+        record_rating(chat_id, rating)
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"Спасибо за оценку ⭐ {rating}"
+        })
+        return True
+    return False
+
+def ask_for_rating(chat_id):
+    keyboard = [
+        [InlineKeyboardButton("⭐ 1", callback_data='rate_1'),
+         InlineKeyboardButton("⭐ 2", callback_data='rate_2'),
+         InlineKeyboardButton("⭐ 3", callback_data='rate_3'),
+         InlineKeyboardButton("⭐ 4", callback_data='rate_4'),
+         InlineKeyboardButton("⭐ 5", callback_data='rate_5')]
+    ]
+    reply_markup = InlineKeyboardMarkup(keyboard).to_dict()
+    requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+        'chat_id': chat_id,
+        'text': "🙏 Оцени работу бота:",
+        'reply_markup': reply_markup
+    })
+
+def handle_stats_request(chat_id):
+    total_users = len(stats["users"])
+    all_actions = sum(len(u["actions"]) for u in stats["users"].values())
+    ratings = stats["ratings"]
+    avg_rating = round(sum(ratings) / len(ratings), 2) if ratings else "–"
+    
+    message = (
+        f"📊 Статистика:\n"
+        f"👥 Пользователей: {total_users}\n"
+        f"📦 Всего действий: {all_actions}\n"
+        f"⭐ Средняя оценка: {avg_rating}"
+    )
+    requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+        'chat_id': chat_id,
+        'text': message
+    })
+
+

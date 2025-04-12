@@ -39,6 +39,21 @@ def update_progress_message(chat_id, text):
         if message_id:
             state["progress_message_id"] = message_id
 
+# === ОСТАНОВКА СООБЩЕНИЯ ПРОГРЕССА ===
+def clear_progress_message(chat_id):
+    state = user_states.get(chat_id, {})
+    message_id = state.pop("progress_message_id", None)
+    if message_id:
+        try:
+            requests.post(f'{TELEGRAM_API_URL}/editMessageText', json={
+                'chat_id': chat_id,
+                'message_id': message_id,
+                'text': "✅ Обработка завершена"
+            })
+        except:
+            pass
+
+
 def handle_post_platform_selection(chat_id):
     text = "Выбери, куда хочешь опубликовать пост 👇"
     keyboard = [
@@ -171,7 +186,7 @@ def handle_transcription_from_any_source(chat_id, source):
         file_path = download_media(source)
         from handlers.handlers_voice import handle_voice_transcription
         handle_voice_transcription(chat_id, file_path)
-        user_states[chat_id].pop("progress_message_id", None)
+        clear_progress_message(chat_id)
     except Exception as e:
         log_transcription_progress(chat_id, f"❌ Ошибка загрузки или транскрибации: {e}")
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={

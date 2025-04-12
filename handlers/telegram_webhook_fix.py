@@ -114,12 +114,11 @@ def handle_rewrite_transcript(chat_id):
 
 def handle_voice_transcription(chat_id, file_path):
     
-# Проверка: установлен ли ffprobe
-ffprobe_check = os.popen("which ffprobe").read().strip()
-if not ffprobe_check:
-    raise EnvironmentError("ffprobe не установлен. Установи его в Render через 'apt install ffmpeg'")
-
-    
+    # Проверка: установлен ли ffprobe
+    ffprobe_check = os.popen("which ffprobe").read().strip()
+    if not ffprobe_check:
+        raise EnvironmentError("ffprobe не установлен. Установи его в Render через 'apt install ffmpeg'")
+        
     try:
         temp_dir = mkdtemp()
         input_path = os.path.join(temp_dir, "input.ogg")

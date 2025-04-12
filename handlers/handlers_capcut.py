@@ -10,6 +10,7 @@ from handlers.handlers_subtitles import generate_subtitles
 from handlers.handlers_publish import publish_reels
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
+
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
 

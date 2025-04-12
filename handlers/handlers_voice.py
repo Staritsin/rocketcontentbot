@@ -2,6 +2,7 @@ import requests
 import os
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from handlers.state import user_states
+from handlers.telegram_webhook_fix import ask_for_rating
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
@@ -12,7 +13,7 @@ TELEGRAM_FILE_API = f'https://api.telegram.org/file/bot{BOT_TOKEN}'
 def handle_voice(chat_id):
     text = (
         "🎙️ Работа с голосом\n"
-        "Отправь мне голосовое сообщение — я превращу его в текст с помощью нейросети Whisper.\n"
+        "Отправь мне голосовое, аудио или видео — я превращу его в текст...\n"
         "Затем ты сможешь сделать рерайт или использовать текст для генерации поста или видео."
     )
     requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
@@ -22,20 +23,16 @@ def handle_voice(chat_id):
 
 def handle_voice_transcription(chat_id, file_id):
     try:
-        print("📅 Получен file_id:", file_id)
-
         file_info = requests.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}").json()
         file_path = file_info['result']['file_path']
         file_url = f"{TELEGRAM_FILE_API}/{file_path}"
 
-        print("🔗 Скачивание по ссылке:", file_url)
         audio_content = requests.get(file_url).content
 
         local_filename = "voice.ogg"
         with open(local_filename, "wb") as f:
             f.write(audio_content)
 
-        print("📤 Отправка в Whisper...")
         with open(local_filename, "rb") as f:
             response = requests.post(
                 "https://api.openai.com/v1/audio/transcriptions",
@@ -45,12 +42,8 @@ def handle_voice_transcription(chat_id, file_id):
             )
 
         result = response.json()
-        print("✅ Ответ от Whisper:", result)
-
         text = result.get("text", "❌ Не удалось распознать речь.")
         user_states[chat_id] = {'last_transcript': text}
-        print("📦 Сохранено в user_states:", user_states[chat_id])
-
 
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
@@ -59,7 +52,7 @@ def handle_voice_transcription(chat_id, file_id):
 
         keyboard = [
             [InlineKeyboardButton("✍️ Сделать рерайт", callback_data='rewrite_transcript')],
-            [InlineKeyboardButton("📤 Использовать как пост", callback_data='select_post_platform')],
+            [InlineKeyboardButton("📤 Использовать как пост", callback_data='use_as_post')],
             [InlineKeyboardButton("🎬 Сделать Reels", callback_data='make_reels')],
             [InlineKeyboardButton("🌟 Всё получилось", callback_data='success')],
             [InlineKeyboardButton("🔙 Вернуться в меню", callback_data='menu')]
@@ -72,8 +65,6 @@ def handle_voice_transcription(chat_id, file_id):
             'reply_markup': reply_markup
         })
 
-        # ✅ Вызов оценки
-        from handlers.telegram_webhook_fix import ask_for_rating
         ask_for_rating(chat_id)
 
     except Exception as e:
@@ -115,4 +106,24 @@ def handle_rewrite_transcript(chat_id):
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
             'text': f"❌ Ошибка рерайта: {e}"
+        })
+def handle_transcribe_input(chat_id, message):
+    try:
+        if 'video' in message:
+            file_id = message['video']['file_id']
+        elif 'document' in message:
+            file_id = message['document']['file_id']
+        elif 'audio' in message:
+            file_id = message['audio']['file_id']
+        elif 'voice' in message:
+            file_id = message['voice']['file_id']
+        else:
+            raise ValueError("Нет поддерживаемого видео, документа или аудио.")
+
+        handle_voice_transcription(chat_id, file_id)
+
+    except Exception as e:
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"❌ Ошибка: {e}"
         })

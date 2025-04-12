@@ -21,10 +21,10 @@ from handlers.handlers_voice import handle_voice_transcription
 from handlers.telegram_webhook_fix import (
     handle_post_platform_selection,
     generate_platform_post,
-    handle_rewrite_transcript,
-    handle_voice_transcription
+    handle_rewrite_transcript
 )
 from handlers.telegram_webhook_fix import send_transcript_file
+
 
 
 

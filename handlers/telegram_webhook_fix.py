@@ -123,7 +123,13 @@ def handle_voice_transcription(chat_id, file_path):
         log_transcription_progress(chat_id, f"Файл загружен: {input_path}")
 
         probe_cmd = f"ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {input_path}"
-        duration = float(os.popen(probe_cmd).read().strip())
+        duration_str = os.popen(probe_cmd).read().strip()
+
+        if not duration_str:
+            raise ValueError("ffprobe не вернул длительность — проверь формат или установку ffmpeg")
+
+        duration = float(duration_str)
+
         chunk_duration = 60
         total_chunks = math.ceil(duration / chunk_duration)
 

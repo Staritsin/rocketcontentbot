@@ -185,8 +185,9 @@ def telegram_webhook():
             elif text.lower() == '/stats':
                 from handlers.telegram_webhook_fix import handle_stats_request
                 handle_stats_request(chat_id)
+
             elif text.lower() == '/help':
-            send_message(chat_id, 
+                send_message(chat_id, 
                 "📚 Что я умею:\n\n"
                 "/menu — главное меню\n"
                 "/stats — статистика\n"
@@ -195,7 +196,7 @@ def telegram_webhook():
                 "✉️ Отправь видео, голос или текст — и я всё обработаю!")
             
             elif text.lower() == '/about':
-            send_message(chat_id, 
+                send_message(chat_id, 
                 "🤖 Обо мне:\n"
                 "Я — бот Александра Старицина, эксперта по нейросетям и автоматизации бизнеса.\n\n"
                 "Я помогаю тебе:\n"

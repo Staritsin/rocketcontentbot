@@ -106,35 +106,26 @@ def handle_rewrite_transcript(chat_id):
 
 def handle_voice_transcription(chat_id, file_path):
     try:
-        from tempfile import mkdtemp
-        import shutil
-
         temp_dir = mkdtemp()
-        chunk_paths = []
-
-        # Сохраняем файл во временную директорию
         input_path = os.path.join(temp_dir, "input.ogg")
+        file_response = requests.get(f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}")
         with open(input_path, "wb") as f:
-            file_response = requests.get(f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}")
             f.write(file_response.content)
 
-        # Получаем длительность с помощью ffmpeg
         probe_cmd = f"ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {input_path}"
         duration = float(os.popen(probe_cmd).read().strip())
-        chunk_duration = 60  # 60 секунд
+        chunk_duration = 60
         total_chunks = math.ceil(duration / chunk_duration)
+
+        full_text = []
 
         for i in range(total_chunks):
             chunk_path = os.path.join(temp_dir, f"chunk_{i}.mp3")
             start_time = i * chunk_duration
             cmd = f"ffmpeg -i {input_path} -ss {start_time} -t {chunk_duration} -ar 44100 -ac 1 -vn -y {chunk_path}"
             os.system(cmd)
-            chunk_paths.append(chunk_path)
 
-        # Отправка в Whisper
-        full_text = []
-        for path in chunk_paths:
-            with open(path, "rb") as f:
+            with open(chunk_path, "rb") as f:
                 response = requests.post(
                     "https://api.openai.com/v1/audio/transcriptions",
                     headers={"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}"},
@@ -143,6 +134,11 @@ def handle_voice_transcription(chat_id, file_path):
                 )
                 result = response.json()
                 full_text.append(result.get("text", ""))
+
+            requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+                'chat_id': chat_id,
+                'text': f"⏳ Прогресс: {i + 1}/{total_chunks} минут обработано..."
+            })
 
         final_text = " ".join(full_text).strip()
         user_states[chat_id] = {'last_transcript': final_text}

@@ -21,14 +21,10 @@ from handlers.handlers_voice import handle_voice_transcription
 from handlers.telegram_webhook_fix import (
     handle_post_platform_selection,
     generate_platform_post,
-    handle_rewrite_transcript
+    handle_rewrite_transcript,
+    send_transcript_file,
+    handle_callback_rating
 )
-from handlers.telegram_webhook_fix import send_transcript_file
-
-
-
-
-
 
 
 app = Flask(__name__)

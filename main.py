@@ -24,6 +24,7 @@ from handlers.telegram_webhook_fix import (
     handle_rewrite_transcript,
     handle_voice_transcription
 )
+from handlers.telegram_webhook_fix import send_transcript_file
 
 
 
@@ -133,8 +134,9 @@ def telegram_webhook():
         elif query_data == 'menu':
             send_message(chat_id, "🔙 Возвращаю в меню. Напиши /menu")
 
+        elif query_data == 'download_transcript':
+            send_transcript_file(chat_id)
 
-        
         return jsonify(success=True)
 
     # === MESSAGE ===

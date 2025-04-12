@@ -102,36 +102,55 @@ def handle_rewrite_transcript(chat_id):
             'text': f"❌ Ошибка рерайта: {e}"
         })
 
-def handle_voice_transcription(chat_id, file_id):
+def handle_voice_transcription(chat_id, file_path):
     try:
-        # Получаем ссылку на файл
-        file_info = requests.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}").json()
-        file_path = file_info['result']['file_path']
-        file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+        from tempfile import mkdtemp
+        import shutil
 
-        # Скачиваем файл
-        local_path = "voice.ogg"
-        audio_data = requests.get(file_url).content
-        with open(local_path, "wb") as f:
-            f.write(audio_data)
+        temp_dir = mkdtemp()
+        chunk_paths = []
 
-        # Отправляем в Whisper
-        with open(local_path, "rb") as f:
-            response = requests.post(
-                "https://api.openai.com/v1/audio/transcriptions",
-                headers={"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}"},
-                files={"file": f},
-                data={"model": "whisper-1"}
-            )
-        result = response.json()
-        text = result.get("text", "❌ Не удалось распознать речь.")
+        # Сохраняем файл во временную директорию
+        input_path = os.path.join(temp_dir, "input.ogg")
+        with open(input_path, "wb") as f:
+            file_response = requests.get(f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}")
+            f.write(file_response.content)
 
-        user_states[chat_id] = {'last_transcript': text}
+        # Получаем длительность с помощью ffmpeg
+        probe_cmd = f"ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {input_path}"
+        duration = float(os.popen(probe_cmd).read().strip())
+        chunk_duration = 60  # 60 секунд
+        total_chunks = math.ceil(duration / chunk_duration)
+
+        for i in range(total_chunks):
+            chunk_path = os.path.join(temp_dir, f"chunk_{i}.mp3")
+            start_time = i * chunk_duration
+            cmd = f"ffmpeg -i {input_path} -ss {start_time} -t {chunk_duration} -ar 44100 -ac 1 -vn -y {chunk_path}"
+            os.system(cmd)
+            chunk_paths.append(chunk_path)
+
+        # Отправка в Whisper
+        full_text = []
+        for path in chunk_paths:
+            with open(path, "rb") as f:
+                response = requests.post(
+                    "https://api.openai.com/v1/audio/transcriptions",
+                    headers={"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}"},
+                    files={"file": f},
+                    data={"model": "whisper-1"}
+                )
+                result = response.json()
+                full_text.append(result.get("text", ""))
+
+        final_text = " ".join(full_text).strip()
+        user_states[chat_id] = {'last_transcript': final_text}
 
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
             'chat_id': chat_id,
-            'text': f"📝 Расшифровка:\n{text}"
+            'text': f"📝 Расшифровка:\n{final_text}"
         })
+
+        shutil.rmtree(temp_dir)
 
     except Exception as e:
         requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={

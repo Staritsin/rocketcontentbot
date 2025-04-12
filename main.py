@@ -47,10 +47,15 @@ def telegram_webhook():
         chat_id = callback['message']['chat']['id']
         query_data = callback['data']
         callback_id = callback['id']
-
+        
+        # Ответ Telegram
         requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerCallbackQuery", json={
             'callback_query_id': callback_id
         })
+        
+        # === добавь сюда
+        if handle_callback_rating(query_data, chat_id):
+            return jsonify(success=True)
 
         if query_data == 'video':
             handle_video(chat_id)

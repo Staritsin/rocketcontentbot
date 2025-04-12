@@ -2,6 +2,7 @@ import requests
 import os
 import math
 import shutil
+import yt_dlp
 from tempfile import mkdtemp
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 from flask import send_file
@@ -47,10 +48,8 @@ def generate_platform_post(chat_id, platform):
 
     if platform == 'instagram':
         text = f"📸 Instagram пост:\n\n{last_text}\n\n👉 Напиши в комменты, что думаешь!"
-
     elif platform == 'telegram':
         text = f"🗣 Telegram пост:\n\n{last_text}"
-
     elif platform == 'spam':
         preview = last_text[:300].strip()
         text = (
@@ -59,10 +58,8 @@ def generate_platform_post(chat_id, platform):
             f"**Текст:** {preview}\n"
             f"[📌 Подробнее](https://your-link.com)"
         )
-
     elif platform == 'vk':
         text = f"📢 Пост для ВКонтакте:\n\n{last_text}\n\n#контент #бот #искусственныйинтеллект"
-
     else:
         text = "❌ Неизвестная платформа"
 
@@ -126,96 +123,8 @@ def send_transcript_file(chat_id):
             'text': "❌ Файл не найден. Попробуй сначала сделать транскрибацию."
         })
 
-def handle_voice_transcription(chat_id, file_path):
-    try:
-        # Проверка: установлен ли ffprobe
-        ffprobe_check = os.popen("which ffprobe").read().strip()
-        if not ffprobe_check:
-            raise EnvironmentError("ffprobe не установлен. Установи его в Render через 'apt install ffmpeg'")
-
-        temp_dir = mkdtemp()
-        input_path = os.path.join(temp_dir, "input.ogg")
-
-        # Получение реальной ссылки на файл по file_id
-        get_url = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_path}")
-        file_url = "https://api.telegram.org/file/bot" + BOT_TOKEN + "/" + get_url.json()['result']['file_path']
-        file_response = requests.get(file_url)
-
-        with open(input_path, "wb") as f:
-            f.write(file_response.content)
-
-        if os.path.getsize(input_path) < 1000:
-            raise ValueError("Файл пустой или не скачался полностью.")
-
-        log_transcription_progress(chat_id, f"Файл загружен: {input_path}")
-
-        probe_cmd = f"ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 {input_path}"
-        duration_str = os.popen(probe_cmd).read().strip()
-        if not duration_str:
-            raise ValueError("ffprobe не вернул длительность — проверь формат или установку ffmpeg")
-
-        duration = float(duration_str)
-        chunk_duration = 60
-        total_chunks = math.ceil(duration / chunk_duration)
-
-        log_transcription_progress(chat_id, f"Общая длительность: {duration} сек. Будет {total_chunks} фрагментов")
-
-        full_text = []
-
-        for i in range(total_chunks):
-            chunk_path = os.path.join(temp_dir, f"chunk_{i}.mp3")
-            start_time = i * chunk_duration
-            cmd = f"ffmpeg -i {input_path} -ss {start_time} -t {chunk_duration} -ar 44100 -ac 1 -vn -y {chunk_path}"
-            os.system(cmd)
-
-            with open(chunk_path, "rb") as f:
-                response = requests.post(
-                    "https://api.openai.com/v1/audio/transcriptions",
-                    headers={"Authorization": f"Bearer {os.environ.get('OPENAI_API_KEY')}"},
-                    files={"file": f},
-                    data={"model": "whisper-1"}
-                )
-                result = response.json()
-                full_text.append(result.get("text", ""))
-
-            log_transcription_progress(chat_id, f"Обработан фрагмент {i + 1}/{total_chunks}")
-
-            requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
-                'chat_id': chat_id,
-                'text': f"⏳ Прогресс: {i + 1}/{total_chunks} минут обработано..."
-            })
-
-        final_text = " ".join(full_text).strip()
-        user_states[chat_id] = {'last_transcript': final_text}
-
-        os.makedirs("transcripts", exist_ok=True)
-        result_path = f"transcripts/result_{chat_id}.txt"
-        with open(result_path, "w", encoding="utf-8") as out:
-            out.write(final_text)
-
-        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
-            'chat_id': chat_id,
-            'text': f"📝 Расшифровка:\n{final_text}"
-        })
-
-        keyboard = [
-            [InlineKeyboardButton("✍️ Сделать рерайт", callback_data='rewrite_transcript')],
-            [InlineKeyboardButton("📤 Использовать как пост", callback_data='use_as_post')],
-            [InlineKeyboardButton("📁 Скачать результат", callback_data='download_transcript')],
-            [InlineKeyboardButton("🔙 В меню", callback_data='menu')]
-        ]
-        reply_markup = InlineKeyboardMarkup(keyboard).to_dict()
-        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
-            'chat_id': chat_id,
-            'text': "Что делаем дальше? 👇",
-            'reply_markup': reply_markup
-        })
-
-        shutil.rmtree(temp_dir)
-
-    except Exception as e:
-        log_transcription_progress(chat_id, f"❌ Ошибка транскрибации: {e}")
-        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
-            'chat_id': chat_id,
-            'text': f"❌ Ошибка транскрибации: {e}"
-        })
+def handle_callback_download_transcript(query_data, chat_id):
+    if query_data == 'download_transcript':
+        send_transcript_file(chat_id)
+        return True
+    return False

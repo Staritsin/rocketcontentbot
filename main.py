@@ -5,7 +5,7 @@ from telegram import InlineKeyboardButton
 from handlers.handlers_video import handle_video
 from handlers.handlers_reels import handle_transcribe
 from handlers.handlers_rewrite import handle_rewrite
-from handlers.handlers_capcut import handle_capcut
+from handlers.handlers_runway import handle_capcut
 from handlers.handlers_subtitles import handle_subtitles
 from handlers.handlers_thumbnail import handle_thumbnail
 from handlers.handlers_publish import handle_publish

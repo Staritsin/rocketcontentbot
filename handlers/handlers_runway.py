@@ -2,7 +2,8 @@ import requests
 import os
 from handlers.state import user_states
 from handlers.handlers_voice import handle_voice_transcription
-from handlers.handlers_rewrite import handle_rewrite_transcript as handle_rewrite_textfrom handlers.handlers_gpt_keywords import extract_keywords_from_text
+from handlers.handlers_rewrite import handle_rewrite_transcript as handle_rewrite_text
+from handlers.handlers_gpt_keywords import extract_keywords_from_text
 from handlers.handlers_pexels import get_pexels_clips
 from handlers.handlers_capcut_api import create_reels_from_template
 from handlers.handlers_subtitles import generate_subtitles

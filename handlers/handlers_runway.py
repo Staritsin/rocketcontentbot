@@ -14,6 +14,7 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
 RUNWAY_API_KEY = os.environ.get("RUNWAY_API_KEY")
 RUNWAY_API_URL = "https://api.runwayml.com/v1/"
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
 
 headers = {
     "Authorization": f"Bearer {RUNWAY_API_KEY}",

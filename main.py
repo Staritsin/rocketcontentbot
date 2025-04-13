@@ -153,6 +153,12 @@ def telegram_webhook():
             return jsonify(success=True)
 
         if 'video' in message or 'document' in message:
+            if user_states.get(chat_id, {}).get("mode") == "capcut_generation":
+                from handlers.handlers_runway import process_capcut_pipeline
+                file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
+                process_capcut_pipeline(chat_id, file_id)
+                return jsonify(success=True)
+
             if user_states.get(chat_id) == 'transcribe':
                 handle_transcribe_input(chat_id, message)
                 return jsonify(success=True)

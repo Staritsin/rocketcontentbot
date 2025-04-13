@@ -8,27 +8,42 @@ HEADERS = {
     "Authorization": PEXELS_API_KEY
 }
 
-def get_pexels_clips(keywords, max_results=3):
+def get_pexels_clips(keywords, per_page=3):
     """
-    Ищет видео по ключевым словам на Pexels и возвращает список ссылок на mp4.
+    Получает короткие видеоклипы по ключевым словам с Pexels.
+    Возвращает список словарей с ключами: video_url, width, height.
     """
-    result_videos = []
+    if not PEXELS_API_KEY:
+        raise ValueError("PEXELS_API_KEY не установлен в переменных окружения.")
+
+    headers = {
+        "Authorization": PEXELS_API_KEY
+    }
+
+    result_clips = []
 
     for keyword in keywords:
-        response = requests.get(PEXELS_API_URL, headers=HEADERS, params={
-            "query": keyword,
-            "per_page": max_results
-        })
-        if response.status_code != 200:
-            continue
+        url = f"https://api.pexels.com/videos/search?query={keyword}&per_page={per_page}&orientation=portrait"
 
-        data = response.json()
-        for video in data.get("videos", []):
-            # Возьмем самое маленькое по размеру видео для быстрого Reels
-            video_url = sorted(video["video_files"], key=lambda v: v["width"])[0]["link"]
-            result_videos.append({
-                "keyword": keyword,
-                "video_url": video_url
-            })
+        try:
+            response = requests.get(url, headers=headers)
+            response.raise_for_status()
+            data = response.json()
 
-    return result_videos
+            for video in data.get("videos", []):
+                video_url = video["video_files"][0]["link"]
+                width = video["width"]
+                height = video["height"]
+
+                result_clips.append({
+                    "video_url": video_url,
+                    "width": width,
+                    "height": height,
+                    "source": "pexels",
+                    "keyword": keyword
+                })
+
+        except Exception as e:
+            print(f"⚠️ Ошибка загрузки видео для ключа '{keyword}': {e}")
+
+    return result_clips

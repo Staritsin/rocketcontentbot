@@ -87,9 +87,32 @@ def process_capcut_pipeline(chat_id, input_data):
         })
 
 def download_video(input_data):
-    # 🔧 Тут будет логика загрузки с Telegram, YouTube, Reels
-    return "/tmp/video.mp4"  # Заглушка
+    file_id = input_data.get('video', {}).get('file_id') or input_data.get('document', {}).get('file_id')
+    if not file_id:
+        raise ValueError("Нет file_id для загрузки видео")
+
+    file_info = requests.get(f"{TELEGRAM_API_URL}/getFile?file_id={file_id}").json()
+    file_path = file_info['result']['file_path']
+    file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+
+    local_path = "/tmp/video.mp4"
+    with open(local_path, "wb") as f:
+        f.write(requests.get(file_url).content)
+    return local_path
+
 
 def transcribe_video(video_path, chat_id):
-    # 🔧 Заглушка под Whisper-распознавание
-    return "Текст из видео (заглушка)"
+    try:
+        with open(video_path, "rb") as f:
+            response = requests.post(
+                "https://api.openai.com/v1/audio/transcriptions",
+                headers={"Authorization": f"Bearer {OPENAI_API_KEY}"},
+                files={"file": f},
+                data={"model": "whisper-1"}
+            )
+        result = response.json()
+        return result.get("text", "❌ Не удалось распознать речь.")
+    except Exception as e:
+        send_message(chat_id, f"❌ Ошибка транскрибации: {e}")
+        raise
+

@@ -16,6 +16,15 @@ def handle_subtitles(chat_id):
         'text': text
     })
 
+# handlers/handlers_subtitles.py
+
+def generate_subtitles(chat_id, text, video_url):
+    """
+    🔧 Заглушка: в будущем добавим генерацию субтитров.
+    Сейчас — просто выводим лог.
+    """
+    print(f"📝 Генерация субтитров для {chat_id}: {text[:30]}... → {video_url}")
+
 def handle_publish(chat_id):
     text = (
         "📤 Публикация контента\n"

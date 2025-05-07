@@ -1,4 +1,25 @@
 import os
+import requests
+
+def get_file_url(file_id):
+    BOT_TOKEN = os.getenv("BOT_TOKEN")
+    file_path_resp = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}")
+    file_path = file_path_resp.json()["result"]["file_path"]
+    return f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+
+def download_telegram_file(file_id, local_path):
+    BOT_TOKEN = os.getenv("BOT_TOKEN")
+    file_info_url = f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}"
+    file_path = requests.get(file_info_url).json()["result"]["file_path"]
+    file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+    with open(local_path, "wb") as f:
+        f.write(requests.get(file_url).content)
+
+def send_message(chat_id, text):
+    requests.post(
+        f"https://api.telegram.org/bot{os.getenv('BOT_TOKEN')}/sendMessage",
+        json={"chat_id": chat_id, "text": text}
+    )
 
 # Токен Telegram бота
 BOT_TOKEN = os.environ.get('BOT_TOKEN')

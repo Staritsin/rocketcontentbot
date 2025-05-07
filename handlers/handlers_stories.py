@@ -4,6 +4,7 @@ import requests
 import subprocess
 from handlers.utils import send_message, download_telegram_file
 
+
 UPLOAD_DIR = "uploads"
 OUTPUT_DIR = "stories"
 os.makedirs(UPLOAD_DIR, exist_ok=True)

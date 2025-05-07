@@ -60,7 +60,42 @@ def telegram_webhook():
             return jsonify(success=True)
 
         if query_data == 'video':
-            handle_video(chat_id)
+            keyboard = [
+                [InlineKeyboardButton("📱 Собрать сторис", callback_data='make_stories')],
+                [InlineKeyboardButton("🎞 Собрать рилс", callback_data='make_reels')]
+            ]
+            reply_markup = {'inline_keyboard': [[btn.to_dict()] for btn in keyboard]}
+            requests.post(TELEGRAM_API_URL, json={
+                'chat_id': chat_id,
+                'text': 'Что будем собирать из видео? 👇',
+                'reply_markup': reply_markup
+            })
+
+        elif query_data == 'make_stories':
+            keyboard = [
+                [InlineKeyboardButton("📤 Stories готов", callback_data='stories_ready')],
+                [InlineKeyboardButton("🔄 На обработку", callback_data='stories_process')]
+            ]
+            reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in keyboard]]}
+            requests.post(TELEGRAM_API_URL, json={
+                'chat_id': chat_id,
+                'text': 'Что дальше со сторис? 👇',
+                'reply_markup': reply_markup
+            })
+
+        elif query_data == 'stories_ready':
+            send_message(chat_id, "📤 Отлично! Готовый Stories принят. Можно публиковать.")
+        
+        elif query_data == 'stories_process':
+            send_message(chat_id, "📤 Окей! Отправь видео, я обработаю его под формат Stories.")
+            user_states[chat_id] = {'mode': 'stories_processing'}
+
+
+
+        elif query_data == 'make_reels':
+            send_message(chat_id, "🎞 Готово! Отправь видео или ссылку — сделаю Reels по шаблону.")
+            user_states[chat_id] = {"mode": "capcut_generation"}
+        
         elif query_data == 'voice':
             handle_voice(chat_id)
         elif query_data == 'text':
@@ -153,6 +188,14 @@ def telegram_webhook():
             return jsonify(success=True)
 
         if 'video' in message or 'document' in message:
+
+            if user_states.get(chat_id, {}).get("mode") == "stories_processing":
+                from handlers.handlers_stories import handle_stories_pipeline
+                file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
+                handle_stories_pipeline(chat_id, file_id)
+                return jsonify(success=True)
+
+            
             if user_states.get(chat_id, {}).get("mode") == "capcut_generation":
                 from handlers.handlers_runway import process_capcut_pipeline
                 file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']

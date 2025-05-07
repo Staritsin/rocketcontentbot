@@ -3,6 +3,7 @@ import requests
 import os
 from telegram import InlineKeyboardButton
 from handlers.handlers_video import handle_video
+from handlers.handlers_stories import handle_stories_pipeline
 from handlers.handlers_reels import handle_transcribe
 from handlers.handlers_rewrite import handle_rewrite
 from handlers.handlers_runway import handle_capcut

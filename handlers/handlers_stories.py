@@ -1,9 +1,8 @@
 import os
 import uuid
-import requests
 import subprocess
+import requests
 from handlers.utils import send_message, download_telegram_file
-
 
 UPLOAD_DIR = "uploads"
 OUTPUT_DIR = "stories"
@@ -18,7 +17,7 @@ def handle_stories_pipeline(chat_id, file_id):
         mov_path = os.path.join(UPLOAD_DIR, f"{uid}.mov")
         download_telegram_file(file_id, mov_path)
 
-        # 2. Конвертируем .mov → .mp4
+        # 2. Конвертируем в .mp4
         mp4_path = os.path.join(UPLOAD_DIR, f"{uid}.mp4")
         subprocess.run([
             "ffmpeg", "-y", "-i", mov_path,
@@ -26,37 +25,36 @@ def handle_stories_pipeline(chat_id, file_id):
             mp4_path
         ], check=True)
 
-        # 3. Удаляем тишину и ускоряем (auto-editor)
-        voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
+        # 3. Удаление тишины и ускорение
+        voice_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
         subprocess.run([
             "auto-editor", mp4_path,
             "--silent", "remove",
-            "--frame_margin", "25",  # ≈1 сек до/после
+            "--frame_margin", "25",
             "--video_speed", "1.2",
             "--silent_threshold", "3.0",
-            "--export_to", voice_only_path,
+            "--export_to", voice_path,
             "--no_open"
         ], check=True)
 
-        # 4. Ресайз под 9:16
+        # 4. Ресайз под вертикальный формат
         vertical_path = os.path.join(OUTPUT_DIR, f"{uid}_vertical.mp4")
         subprocess.run([
-            "ffmpeg", "-y", "-i", voice_only_path,
+            "ffmpeg", "-y", "-i", voice_path,
             "-vf", "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2",
             "-c:a", "copy", vertical_path
         ], check=True)
 
-        # 5. Нарезка на куски по 40 сек
-        segment_output = os.path.join(OUTPUT_DIR, f"{uid}_part_%03d.mp4")
+        # 5. Нарезка на куски по 40 секунд
+        segment_pattern = os.path.join(OUTPUT_DIR, f"{uid}_part_%03d.mp4")
         subprocess.run([
             "ffmpeg", "-y", "-i", vertical_path,
             "-c", "copy", "-map", "0",
-            "-segment_time", "40", "-f", "segment",
-            segment_output
+            "-segment_time", "40", "-f", "segment", segment_pattern
         ], check=True)
 
-        # 6. Отправка первого сегмента в Telegram
-        first_part = segment_output.replace("%03d", "000")
+        # 6. Отправка первого куска
+        first_part = segment_pattern.replace("%03d", "000")
         if os.path.exists(first_part):
             with open(first_part, "rb") as f:
                 requests.post(
@@ -66,11 +64,12 @@ def handle_stories_pipeline(chat_id, file_id):
                 )
             send_message(chat_id, "✅ Сторис готов! 🔥")
         else:
-            send_message(chat_id, "⚠️ Видео получилось пустым или слишком коротким.")
+            send_message(chat_id, "⚠️ Ошибка: видео слишком короткое или не сгенерировалось.")
 
     except Exception as e:
         send_message(chat_id, f"❌ Ошибка обработки: {e}")
+
     finally:
-        for f in [mov_path, mp4_path, voice_only_path, vertical_path]:
-            if os.path.exists(f):
-                os.remove(f)
+        for path in [mov_path, mp4_path, voice_path, vertical_path]:
+            if os.path.exists(path):
+                os.remove(path)

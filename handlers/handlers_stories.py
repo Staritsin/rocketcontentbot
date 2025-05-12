@@ -3,6 +3,13 @@ import uuid
 import requests
 import subprocess
 from handlers.utils import send_message, download_telegram_file
+from handlers.handlers_rewrite import handle_rewrite_transcript as handle_rewrite_text
+from handlers.handlers_gpt_keywords import extract_keywords_from_text
+from handlers.handlers_pexels import get_pexels_clips
+from handlers.handlers_capcut_api import create_reels_from_template
+from handlers.handlers_subtitles import generate_subtitles
+from handlers.handlers_publish import publish_reels
+from handlers.state import user_states
 
 UPLOAD_DIR = "uploads"
 OUTPUT_DIR = "stories"
@@ -75,3 +82,33 @@ def handle_stories_pipeline(chat_id, file_id):
         for f in [mov_path, mp4_path, voice_only_path, vertical_path]:
             if os.path.exists(f):
                 os.remove(f)
+
+
+def process_capcut_pipeline(chat_id, input_data):
+    try:
+        send_message(chat_id, "⏳ Скачиваю видео...")
+        video_path = download_telegram_file(input_data, f"/tmp/{uuid.uuid4()}.mp4")
+
+        send_message(chat_id, "🧠 Транскрибирую видео...")
+        transcript = transcribe_video(video_path, chat_id)
+
+        send_message(chat_id, "✍️ Делаю рерайт текста...")
+        rewritten_text = handle_rewrite_text(chat_id, transcript)
+
+        send_message(chat_id, "🗝 Извлекаю ключевые слова...")
+        keywords = extract_keywords_from_text(rewritten_text)
+
+        send_message(chat_id, "🎞 Ищу видео по ключевым словам...")
+        pexels_clips = get_pexels_clips(keywords)
+
+        send_message(chat_id, "🎬 Собираю видео в CapCut шаблоне...")
+        final_video_url = create_reels_from_template(chat_id, pexels_clips, rewritten_text)
+
+        send_message(chat_id, "🔤 Генерирую субтитры...")
+        generate_subtitles(chat_id, rewritten_text, final_video_url)
+
+        send_message(chat_id, "📤 Публикую Reels...")
+        publish_reels(chat_id, final_video_url)
+
+    except Exception as e:
+        send_message(chat_id, f"❌ Ошибка генерации Reels: {e}")

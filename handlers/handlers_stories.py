@@ -35,16 +35,20 @@ def handle_stories_pipeline(chat_id, file_id):
         send_message(chat_id, "🔇 Удаляю тишину и ускоряю...")
         voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
         insert_percent = user_states.get(chat_id, {}).get('inserts_percent', 30)
-        subprocess.run([
-            "auto-editor", mp4_path,
-            "--edit", "audio",
+        cmd = [
+            "auto-editor",
+            mp4_path,
+            "--edit", "audio:threshold=3%",
             "--frame_margin", "25",
             "--video_speed", "1.2",
-            "--silent_threshold", "3.0",
-            "--cut_percent", str(insert_percent),
-            "--export_to", voice_only_path,
-            "--no_open"
-        ], check=True)
+            "--output-file", voice_only_path,
+            "--video-codec", "libx264"
+        ]
+
+        
+        print("Команда авто-редактора:", " ".join(cmd))
+        
+        subprocess.run(cmd, check=True)
 
         send_message(chat_id, "📱 Ресайз под формат 9:16...")
         vertical_path = os.path.join(OUTPUT_DIR, f"{uid}_vertical.mp4")

@@ -27,15 +27,18 @@ def handle_stories_pipeline(chat_id, file_id):
 
         # 3. Удаление тишины и ускорение
         voice_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
+        insert_percent = user_states[chat_id] = {'mode': 'stories_processing', 'inserts_percent': 30}
         subprocess.run([
             "auto-editor", mp4_path,
             "--silent", "remove",
             "--frame_margin", "25",
             "--video_speed", "1.2",
             "--silent_threshold", "3.0",
-            "--export_to", voice_path,
+            "--cut_percent", str(insert_percent),
+            "--export_to", voice_only_path,
             "--no_open"
         ], check=True)
+
 
         # 4. Ресайз под вертикальный формат
         vertical_path = os.path.join(OUTPUT_DIR, f"{uid}_vertical.mp4")

@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+аfrom flask import Flask, request, jsonify
 from flask import send_from_directory
 import requests
 import os
@@ -175,28 +175,70 @@ def telegram_webhook():
 
         if 'text' in message:
             text = message['text']
+
+                if text == "📖 Stories":
+                send_message(chat_id, "📖 Отлично! Отправь видео, я сделаю Stories со вставками и субтитрами.")
+                user_states[chat_id] = {'mode': 'stories_processing'}
+                return jsonify(success=True)
+        
+            elif text == "🎬 REELS":
+                send_message(chat_id, "🎬 Готово! Отправь видео или ссылку — сделаю Reels по шаблону.")
+                user_states[chat_id] = {"mode": "capcut_generation"}
+                return jsonify(success=True)
+        
+            elif text == "🎬 Скачать видео в Mp4":
+                send_message(chat_id, "🎬 Вставь ссылку на видео (YouTube, Reels, Shorts, Telegram, VK) — скачаю и обработаю.")
+                user_states[chat_id] = {'mode': 'download_video'}
+                return jsonify(success=True)
+        
+            elif text == "🧠 Вытащить Текст":
+                send_message(chat_id, "🧠 Отправь голос или видео — вытащу текст через Whisper.")
+                user_states[chat_id] = {'mode': 'transcribe'}
+                return jsonify(success=True)
+        
+            elif text == "🎙 Переводчик":
+                send_message(chat_id, "🌍 Отправь голосовое — переведу на 3 языка.")
+                user_states[chat_id] = {'mode': 'translate'}
+                return jsonify(success=True)
+        
+            elif text == "🖼 Фото":
+                send_message(chat_id, "🖼 Отправь описание или тему — сгенерирую изображение.")
+                user_states[chat_id] = {'mode': 'image_generation'}
+                return jsonify(success=True)
+        
+            elif text == "💳 Подписка":
+                send_message(chat_id, "💳 Оплата и подписка через Make — доступна в индивидуальном порядке. Напиши в поддержку.")
+                return jsonify(success=True)
+        
+            elif text == "📂 Контент":
+                send_message(chat_id, "📂 Хранилище твоих видео и постов. Пока в разработке.")
+                return jsonify(success=True)
+        
+            elif text == "🛠 Поддержка":
+                send_message(chat_id, "🛠 Напиши в @Staritsin или оставь сообщение здесь — я помогу.")
+                return jsonify(success=True)
+            
             if user_states.get(chat_id) == 'transcribe':
                 handle_transcribe_input(chat_id, text)
                 return jsonify(success=True)
             if text.lower() == '/start':
                 send_message(chat_id, "Привет! \ud83d\udc4b Я — твой персональный AI-ассистент...\nГотов начать? Жми /menu \ud83d\ude0a")
             elif text.lower() == '/menu':
+                from telegram import ReplyKeyboardMarkup
+            
                 keyboard = [
-                    [InlineKeyboardButton("\U0001F3AC Видео", callback_data='video'),
-                     InlineKeyboardButton("\U0001F3A7 Голос", callback_data='voice')],
-                    [InlineKeyboardButton("\u270d\ufe0f Текст", callback_data='text'),
-                     InlineKeyboardButton("\U0001F5BC Картинки", callback_data='image')],
-                    [InlineKeyboardButton("\U0001F4C5 План", callback_data='plan'),
-                     InlineKeyboardButton("\U0001F4B3 Оплата", callback_data='pay')],
-                    [InlineKeyboardButton("\U0001F4F2 Умный Reels", callback_data='smart_reels')],
-                    [InlineKeyboardButton("\U0001F6E0 Поддержка", callback_data='support')]
+                    ["🎬 Скачать видео в Mp4", "🧠 Вытащить Текст"],
+                    ["📖 Stories", "🎬 REELS"],
+                    ["🖼 Фото", "🎙 Переводчик"],
+                    ["💳 Подписка", "📂 Контент", "🛠 Поддержка"]
                 ]
-                reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
+                reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
                 requests.post(TELEGRAM_API_URL, json={
                     'chat_id': chat_id,
-                    'text': 'Что будем делать? \ud83d\udc47',
-                    'reply_markup': reply_markup
+                    'text': 'Что будем делать? 👇',
+                    'reply_markup': reply_markup.to_dict()
                 })
+
             elif text.lower() == '/stats':
                 from handlers.telegram_webhook_fix import handle_stats_request
                 handle_stats_request(chat_id)

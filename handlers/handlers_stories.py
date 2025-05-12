@@ -35,6 +35,7 @@ def handle_stories_pipeline(chat_id, file_id):
         send_message(chat_id, "🔇 Удаляю тишину и ускоряю...")
         voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
         insert_percent = user_states.get(chat_id, {}).get('inserts_percent', 30)
+
         cmd = [
             "auto-editor",
             mp4_path,
@@ -45,9 +46,7 @@ def handle_stories_pipeline(chat_id, file_id):
             "--video-codec", "libx264"
         ]
 
-        
         print("Команда авто-редактора:", " ".join(cmd))
-        
         subprocess.run(cmd, check=True)
 
         send_message(chat_id, "📱 Ресайз под формат 9:16...")
@@ -68,15 +67,17 @@ def handle_stories_pipeline(chat_id, file_id):
         ], check=True)
 
         send_message(chat_id, "📤 Отправляю готовое видео...")
-        first_part = segment_output.replace("%03d", "000")
-        if os.path.exists(first_part):
-            with open(first_part, "rb") as f:
-                requests.post(
-                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendVideo",
-                    data={"chat_id": chat_id},
-                    files={"video": f}
-                )
-            send_message(chat_id, "✅ Сторис готов! 🔥")
+        parts = sorted([f for f in os.listdir(OUTPUT_DIR) if f.startswith(uid) and f.endswith(".mp4")])
+        if parts:
+            for filename in parts:
+                full_path = os.path.join(OUTPUT_DIR, filename)
+                with open(full_path, "rb") as f:
+                    requests.post(
+                        f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendVideo",
+                        data={"chat_id": chat_id},
+                        files={"video": f}
+                    )
+            send_message(chat_id, "✅ Все Stories отправлены! 🔥")
         else:
             send_message(chat_id, "⚠️ Видео получилось пустым или слишком коротким.")
 
@@ -86,7 +87,9 @@ def handle_stories_pipeline(chat_id, file_id):
         for f in [mov_path, mp4_path, voice_only_path, vertical_path]:
             if os.path.exists(f):
                 os.remove(f)
-
+        for f in os.listdir(OUTPUT_DIR):
+            if f.startswith(uid):
+                os.remove(os.path.join(OUTPUT_DIR, f))
 
 def process_capcut_pipeline(chat_id, input_data):
     try:

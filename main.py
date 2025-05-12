@@ -162,6 +162,7 @@ def telegram_webhook():
 
         if 'video' in message or 'document' in message:
             file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
+            
             if user_states.get(chat_id, {}).get("mode") == "stories_processing":
                 handle_stories_pipeline(chat_id, file_id)
                 return jsonify(success=True)
@@ -176,7 +177,7 @@ def telegram_webhook():
         if 'text' in message:
             text = message['text']
 
-                if text == "📖 Stories":
+            if text == "📖 Stories":
                 send_message(chat_id, "📖 Отлично! Отправь видео, я сделаю Stories со вставками и субтитрами.")
                 user_states[chat_id] = {'mode': 'stories_processing'}
                 return jsonify(success=True)
@@ -221,6 +222,7 @@ def telegram_webhook():
             if user_states.get(chat_id) == 'transcribe':
                 handle_transcribe_input(chat_id, text)
                 return jsonify(success=True)
+                
             if text.lower() == '/start':
                 send_message(chat_id, "Привет! \ud83d\udc4b Я — твой персональный AI-ассистент...\nГотов начать? Жми /menu \ud83d\ude0a")
             elif text.lower() == '/menu':

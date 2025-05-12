@@ -9,6 +9,7 @@ from handlers.handlers_capcut_api import create_reels_from_template
 from handlers.handlers_subtitles import generate_subtitles
 from handlers.handlers_publish import publish_reels
 
+
 from telegram import InlineKeyboardButton, InlineKeyboardMarkup
 
 
@@ -69,8 +70,6 @@ def process_capcut_pipeline(chat_id, input_data):
         pexels_clips = get_pexels_clips(keywords)
         final_video_url = create_reels_from_template(chat_id, pexels_clips, rewritten_text)
         generate_subtitles(chat_id, rewritten_text, final_video_url)
-       
-    from handlers.handlers_publish import publish_reels
         publish_reels(chat_id, final_video_url)
 
         keyboard = [

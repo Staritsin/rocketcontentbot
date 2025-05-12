@@ -54,7 +54,7 @@ def handle_stories_pipeline(chat_id, file_id):
         vertical_path = os.path.join(OUTPUT_DIR, f"{uid}_vertical.mp4")
         subprocess.run([
             "ffmpeg", "-y", "-i", voice_only_path,
-            "-vf", "scale=720:1280:force_original_aspect_ratio=decrease,pad=720:1280:(ow-iw)/2:(oh-ih)/2",
+            "-vf", "scale='if(gt(a,9/16),720,-2)':'if(gt(a,9/16),-2,1280)',pad=720:1280:(ow-iw)/2:(oh-ih)/2",
             "-c:a", "copy", vertical_path
         ], check=True)
 

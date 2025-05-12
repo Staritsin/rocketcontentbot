@@ -37,7 +37,7 @@ def handle_stories_pipeline(chat_id, file_id):
         insert_percent = user_states.get(chat_id, {}).get('inserts_percent', 30)
         subprocess.run([
             "auto-editor", mp4_path,
-            "--silent", "remove",
+            "--edit", "audio",
             "--frame_margin", "25",
             "--video_speed", "1.2",
             "--silent_threshold", "3.0",

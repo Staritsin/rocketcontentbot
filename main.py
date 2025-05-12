@@ -28,9 +28,6 @@ from handlers.telegram_webhook_fix import (
     handle_callback_rating
 )
 
-
-
-
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
@@ -43,61 +40,59 @@ def index():
 @app.route('/telegram', methods=['POST'])
 def telegram_webhook():
     data = request.get_json()
-    print("🔥 Получены данные от Telegram:", data)
+    print("\U0001F525 Получены данные от Telegram:", data)
 
-    # === CALLBACK QUERY ===
     if 'callback_query' in data:
         callback = data['callback_query']
         chat_id = callback['message']['chat']['id']
         query_data = callback['data']
         callback_id = callback['id']
-        
-        # Ответ Telegram
+
         requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerCallbackQuery", json={
             'callback_query_id': callback_id
         })
-        
-        # === добавь сюда
+
         if handle_callback_rating(query_data, chat_id):
             return jsonify(success=True)
 
         if query_data == 'video':
             keyboard = [
-                [InlineKeyboardButton("📱 Собрать сторис", callback_data='make_stories')],
-                [InlineKeyboardButton("🎞 Собрать рилс", callback_data='make_reels')]
+                [InlineKeyboardButton("\U0001F4F1 Собрать сторис", callback_data='make_stories')],
+                [InlineKeyboardButton("\U0001F39E Собрать рилс", callback_data='make_reels')]
             ]
             reply_markup = {'inline_keyboard': [[btn.to_dict()] for btn in keyboard]}
             requests.post(TELEGRAM_API_URL, json={
                 'chat_id': chat_id,
-                'text': 'Что будем собирать из видео? 👇',
+                'text': 'Что будем собирать из видео? \ud83d\udc47',
                 'reply_markup': reply_markup
             })
 
         elif query_data == 'make_stories':
             keyboard = [
-                [InlineKeyboardButton("📤 Stories готов", callback_data='stories_ready')],
-                [InlineKeyboardButton("🔄 На обработку", callback_data='stories_process')]
+                [InlineKeyboardButton("10% склеек", callback_data='stories_10'),
+                 InlineKeyboardButton("30%", callback_data='stories_30')],
+                [InlineKeyboardButton("50%", callback_data='stories_50'),
+                 InlineKeyboardButton("100%", callback_data='stories_100')]
             ]
-            reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in keyboard]]}
+            reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
             requests.post(TELEGRAM_API_URL, json={
                 'chat_id': chat_id,
-                'text': 'Что дальше со сторис? 👇',
+                'text': 'Выбери сколько процентов вставок нужно: \ud83d\udd22',
                 'reply_markup': reply_markup
             })
 
+        elif query_data.startswith('stories_'):
+            percent = int(query_data.split('_')[1])
+            user_states[chat_id] = {'mode': 'stories_processing', 'inserts_percent': percent}
+            send_message(chat_id, f"✅ Принято! Будет использовано {percent}% вставок. Теперь отправь видео.")
+
         elif query_data == 'stories_ready':
-            send_message(chat_id, "📤 Отлично! Готовый Stories принят. Можно публиковать.")
-        
-        elif query_data == 'stories_process':
-            send_message(chat_id, "📤 Окей! Отправь видео, я обработаю его под формат Stories.")
-            user_states[chat_id] = {'mode': 'stories_processing'}
-
-
+            send_message(chat_id, "\U0001F4E4 Отлично! Готовый Stories принят. Можно публиковать.")
 
         elif query_data == 'make_reels':
-            send_message(chat_id, "🎞 Готово! Отправь видео или ссылку — сделаю Reels по шаблону.")
+            send_message(chat_id, "\U0001F3A5 Готово! Отправь видео или ссылку — сделаю Reels по шаблону.")
             user_states[chat_id] = {"mode": "capcut_generation"}
-        
+
         elif query_data == 'voice':
             handle_voice(chat_id)
         elif query_data == 'text':
@@ -113,73 +108,49 @@ def telegram_webhook():
         elif query_data == 'smart_reels':
             send_message(chat_id, "📲 Умное создание Reels\nОтправь мне видео или ссылку. Я сделаю: транскрибацию, рерайт, субтитры, видео из шаблона, обложку и публикацию.")
             keyboard = [
-                [InlineKeyboardButton("🔤 Транскрибация", callback_data='transcribe'),
-                 InlineKeyboardButton("✍️ Рерайт", callback_data='rewrite')],
-                [InlineKeyboardButton("🧩 Видео из шаблона CapCut", callback_data='capcut'),
-                 InlineKeyboardButton("🎞 Субтитры", callback_data='subtitles')],
-                [InlineKeyboardButton("🖼 Обложка", callback_data='thumbnail'),
-                 InlineKeyboardButton("📤 Постинг", callback_data='publish')]
+                [InlineKeyboardButton("\ud83d\udd24 Транскрибация", callback_data='transcribe'),
+                 InlineKeyboardButton("\u270d\ufe0f Рерайт", callback_data='rewrite')],
+                [InlineKeyboardButton("\U0001F9E9 Видео из шаблона CapCut", callback_data='capcut'),
+                 InlineKeyboardButton("\U0001F39E Субтитры", callback_data='subtitles')],
+                [InlineKeyboardButton("\U0001F5BC Обложка", callback_data='thumbnail'),
+                 InlineKeyboardButton("\U0001F4E4 Постинг", callback_data='publish')]
             ]
             reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
             requests.post(TELEGRAM_API_URL, json={
                 'chat_id': chat_id,
-                'text': 'Выбери, что сделать с видео 👇',
+                'text': 'Выбери, что сделать с видео \ud83d\udc47',
                 'reply_markup': reply_markup
             })
+
         elif query_data == 'transcribe':
             user_states[chat_id] = 'transcribe'
             send_message(chat_id, "✉️ Отправь видео или текст для транскрибации.")
-        
         elif query_data == 'rewrite':
             handle_rewrite(chat_id)
-        
         elif query_data == 'capcut':
             handle_capcut(chat_id)
-        
         elif query_data == 'subtitles':
             handle_subtitles(chat_id)
-        
         elif query_data == 'thumbnail':
             handle_thumbnail(chat_id)
-        
         elif query_data == 'publish':
             handle_publish(chat_id)
-        
         elif query_data == 'use_as_post':
             handle_post_platform_selection(chat_id)
-        
-        elif query_data == 'post_instagram':
-            generate_platform_post(chat_id, 'instagram')
-        
-        elif query_data == 'post_telegram':
-            generate_platform_post(chat_id, 'telegram')
-        
-        elif query_data == 'post_spam':
-            generate_platform_post(chat_id, 'spam')
-        
-        elif query_data == 'post_vk':
-            generate_platform_post(chat_id, 'vk')
-        
+        elif query_data.startswith('post_'):
+            generate_platform_post(chat_id, query_data.split('_')[1])
         elif query_data == 'rewrite_transcript':
             send_message(chat_id, "✍️ Окей, запускаю рерайт текста!")
             handle_rewrite_transcript(chat_id)
-
-        
-        elif query_data == 'make_reels':
-            send_message(chat_id, "🎬 Начинаю сборку Reels.")
-        
         elif query_data == 'success':
             send_message(chat_id, "🌟 Рад, что всё получилось!")
-        
         elif query_data == 'menu':
             send_message(chat_id, "🔙 Возвращаю в меню. Напиши /menu")
-
         elif query_data == 'download_transcript':
             send_transcript_file(chat_id)
 
         return jsonify(success=True)
 
-    # === MESSAGE ===
     if 'message' in data:
         message = data['message']
         chat_id = message['chat']['id']
@@ -190,76 +161,49 @@ def telegram_webhook():
             return jsonify(success=True)
 
         if 'video' in message or 'document' in message:
-
+            file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
             if user_states.get(chat_id, {}).get("mode") == "stories_processing":
-                from handlers.handlers_stories import handle_stories_pipeline
-                file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
                 handle_stories_pipeline(chat_id, file_id)
                 return jsonify(success=True)
-
-            
             if user_states.get(chat_id, {}).get("mode") == "capcut_generation":
                 from handlers.handlers_runway import process_capcut_pipeline
-                file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
                 process_capcut_pipeline(chat_id, file_id)
                 return jsonify(success=True)
-
             if user_states.get(chat_id) == 'transcribe':
                 handle_transcribe_input(chat_id, message)
                 return jsonify(success=True)
 
         if 'text' in message:
             text = message['text']
-
             if user_states.get(chat_id) == 'transcribe':
                 handle_transcribe_input(chat_id, text)
                 return jsonify(success=True)
-
             if text.lower() == '/start':
-                send_message(chat_id, "Привет! 👋 Я — твой персональный AI-ассистент...\nГотов начать? Жми /menu 😊")
+                send_message(chat_id, "Привет! \ud83d\udc4b Я — твой персональный AI-ассистент...\nГотов начать? Жми /menu \ud83d\ude0a")
             elif text.lower() == '/menu':
                 keyboard = [
-                    [InlineKeyboardButton("🎬 Видео", callback_data='video'),
-                     InlineKeyboardButton("🎧 Голос", callback_data='voice')],
-                    [InlineKeyboardButton("✍️ Текст", callback_data='text'),
-                     InlineKeyboardButton("🖼 Картинки", callback_data='image')],
-                    [InlineKeyboardButton("📅 План", callback_data='plan'),
-                     InlineKeyboardButton("💳 Оплата", callback_data='pay')],
-                    [InlineKeyboardButton("📲 Умный Reels", callback_data='smart_reels')],
-                    [InlineKeyboardButton("🛠 Поддержка", callback_data='support')]
+                    [InlineKeyboardButton("\U0001F3AC Видео", callback_data='video'),
+                     InlineKeyboardButton("\U0001F3A7 Голос", callback_data='voice')],
+                    [InlineKeyboardButton("\u270d\ufe0f Текст", callback_data='text'),
+                     InlineKeyboardButton("\U0001F5BC Картинки", callback_data='image')],
+                    [InlineKeyboardButton("\U0001F4C5 План", callback_data='plan'),
+                     InlineKeyboardButton("\U0001F4B3 Оплата", callback_data='pay')],
+                    [InlineKeyboardButton("\U0001F4F2 Умный Reels", callback_data='smart_reels')],
+                    [InlineKeyboardButton("\U0001F6E0 Поддержка", callback_data='support')]
                 ]
                 reply_markup = {'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]}
                 requests.post(TELEGRAM_API_URL, json={
                     'chat_id': chat_id,
-                    'text': 'Что будем делать? 👇',
+                    'text': 'Что будем делать? \ud83d\udc47',
                     'reply_markup': reply_markup
                 })
-
             elif text.lower() == '/stats':
                 from handlers.telegram_webhook_fix import handle_stats_request
                 handle_stats_request(chat_id)
-
             elif text.lower() == '/help':
-                send_message(chat_id, 
-                "📚 Что я умею:\n\n"
-                "/menu — главное меню\n"
-                "/stats — статистика\n"
-                "/help — список команд\n"
-                "/about — кто я и зачем\n\n"
-                "✉️ Отправь видео, голос или текст — и я всё обработаю!")
-            
+                send_message(chat_id, "\ud83d\udcda Что я умею:\n\n/menu — главное меню\n/stats — статистика\n/help — список команд\n/about — кто я и зачем\n\n✉️ Отправь видео, голос или текст — и я всё обработаю!")
             elif text.lower() == '/about':
-                send_message(chat_id, 
-                "🤖 Обо мне:\n"
-                "Я — бот Александра Старицина, эксперта по нейросетям и автоматизации бизнеса.\n\n"
-                "Я помогаю тебе:\n"
-                "— расшифровывать голос и видео\n"
-                "— делать Reels из шаблона\n"
-                "— генерировать и публиковать посты\n"
-                "— работать с CapCut, Telegram, Instagram\n\n"
-                "🌐 Подробнее: https://revolife.ru")
-
-
+                send_message(chat_id, "\ud83e\udd16 Обо мне:\nЯ — бот Александра Старицина, эксперта по нейросетям и автоматизации бизнеса.\n\nЯ помогаю тебе:\n— расшифровывать голос и видео\n— делать Reels из шаблона\n— генерировать и публиковать посты\n— работать с CapCut, Telegram, Instagram\n\n\ud83c\udf10 Подробнее: https://revolife.ru")
             else:
                 send_message(chat_id, "✅ Бот получил сообщение!")
 
@@ -277,4 +221,3 @@ if __name__ == '__main__':
 @app.route("/videos/<path:filename>")
 def serve_video(filename):
     return send_from_directory("videos", filename)
-

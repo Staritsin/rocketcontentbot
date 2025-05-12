@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+from flask import send_from_directory
 import requests
 import os
 from telegram import InlineKeyboardButton
@@ -272,3 +273,8 @@ def send_message(chat_id, text):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, threaded=True)
+
+@app.route("/videos/<path:filename>")
+def serve_video(filename):
+    return send_from_directory("videos", filename)
+

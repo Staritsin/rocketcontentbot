@@ -70,8 +70,8 @@ def process_capcut_pipeline(chat_id, input_data):
         final_video_url = create_reels_from_template(chat_id, pexels_clips, rewritten_text)
         generate_subtitles(chat_id, rewritten_text, final_video_url)
        
-        from handlers.handlers_publish import publish_reels
-            publish_reels(chat_id, final_video_url)
+    from handlers.handlers_publish import publish_reels
+        publish_reels(chat_id, final_video_url)
 
         keyboard = [
             [InlineKeyboardButton("🌟 Всё получилось", callback_data='success')],

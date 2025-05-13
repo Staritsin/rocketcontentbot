@@ -2,6 +2,9 @@ import torch
 import torchaudio
 from silero_vad import get_speech_timestamps, read_audio
 import os
+from silero_vad import VoiceActivityDetector
+
+model = VoiceActivityDetector("silero_vad.jit")
 
 def extract_voice_segments(input_path, output_path, chat_id=None, send_message=None):
     try:
@@ -9,6 +12,8 @@ def extract_voice_segments(input_path, output_path, chat_id=None, send_message=N
             send_message(chat_id, "🧠 Отбираю только голос с помощью VAD...")
 
         print(f"[VAD] Загружаю аудио: {input_path}")
+        model.reset_states()
+
         wav = read_audio(input_path, sampling_rate=16000)
 
         print("[VAD] Ищу голосовые фрагменты...")

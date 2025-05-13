@@ -74,7 +74,7 @@ def handle_stories_pipeline(chat_id, file_id):
             "--frame_margin", "25",
             "--video_speed", "1.2",
          
-            "--export_to", voice_only_path,
+            "--output-file", voice_only_path,
             "--video-codec", "libx264"
         ]
         print("Команда авто-редактора:", " ".join(cmd))

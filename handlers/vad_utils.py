@@ -12,11 +12,10 @@ def extract_voice_segments(input_path, output_path, chat_id=None, send_message=N
             send_message(chat_id, "🧠 Отбираю только голос с помощью VAD...")
 
         print(f"[VAD] Загружаю аудио: {input_path}")
-        model.reset_states()
-
         wav = read_audio(input_path, sampling_rate=16000)
 
         print("[VAD] Ищу голосовые фрагменты...")
+        model.reset_states()
         speech_timestamps = get_speech_timestamps(wav, model='silero_vad', sampling_rate=16000)
 
         if not speech_timestamps:

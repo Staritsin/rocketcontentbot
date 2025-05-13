@@ -11,6 +11,8 @@ from handlers.handlers_capcut_api import create_reels_from_template
 from handlers.handlers_subtitles import generate_subtitles
 from handlers.handlers_publish import publish_reels
 from handlers.state import user_states
+from handlers.vad_utils import extract_voice_segments
+
 
 UPLOAD_DIR = "uploads"
 OUTPUT_DIR = "stories"
@@ -57,7 +59,7 @@ def handle_stories_pipeline(chat_id, file_id):
         insert_percent = user_states.get(chat_id, {}).get('inserts_percent', 30)
         cmd = [
             "auto-editor",
-            denoised_path,
+            vad_audio_path,
             "--edit", "audio:threshold=3%",
             "--frame_margin", "25",
             "--video_speed", "1.2",

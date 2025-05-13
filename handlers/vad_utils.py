@@ -30,7 +30,19 @@ def extract_voice_segments(input_path, output_path, chat_id=None, send_message=N
         for t in speech_timestamps:
             start = int(t['start'] * 16)
             end = int(t['end'] * 16)
-            chunks.append(wav[start:end])
+            segment = wav[start:end]
+        
+            # Применим fade-in и fade-out (длительность по 50 мс = 800 сэмплов при 16к)
+            fade_duration = min(800, segment.shape[1] // 4)  # не больше 25% длины
+            segment = torchaudio.functional.fade(
+                waveform=segment,
+                fade_in_len=fade_duration,
+                fade_out_len=fade_duration,
+                fade_shape='linear'
+            )
+        
+            chunks.append(segment)
+
 
         speech = torch.cat(chunks)
 

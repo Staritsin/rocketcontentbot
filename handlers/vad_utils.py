@@ -1,22 +1,25 @@
 import torch
+import numpy as np
 import torchaudio
-from silero_vad import get_speech_timestamps, read_audio
+from silero_vad import get_speech_timestamps, read_audio, save_audio
+
+# Загружаем модель и утилиты один раз
+vad_model, utils = torch.hub.load(
+    repo_or_dir='snakers4/silero-vad',
+    model='silero_vad',
+    trust_repo=True
+)
+
+(get_speech_timestamps, _, read_audio, _, _) = utils
 
 def extract_voice_segments(input_path, output_path):
     wav = read_audio(input_path, sampling_rate=16000)
-    speech_timestamps = get_speech_timestamps(wav, model='silero_vad', sampling_rate=16000)
 
-    if not speech_timestamps or len(speech_timestamps) == 0:
+    # ← исправлено: передаём модель, а не строку
+    speech_timestamps = get_speech_timestamps(wav, vad_model, sampling_rate=16000)
+
+    if not speech_timestamps:
         raise ValueError("❌ Речь не найдена — попробуй другое видео")
 
-    chunks = []
-    for t in speech_timestamps:
-        start = int(t['start'] * 16)
-        end = int(t['end'] * 16)
-        chunks.append(wav[start:end])
-
-    if not chunks:
-        raise ValueError("❌ Не удалось извлечь голосовые фрагменты")
-
-    speech = torch.cat(chunks)
-    torchaudio.save(output_path, speech.unsqueeze(0), 16000)
+    # Сохраняем файл с вырезанными фрагментами речи
+    save_audio(output_path, wav, speech_timestamps, sampling_rate=16000)

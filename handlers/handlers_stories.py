@@ -18,6 +18,12 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def handle_stories_pipeline(chat_id, file_id):
+
+    if user_states.get(chat_id, {}).get("processing") == True:
+        send_message(chat_id, "⏳ Видео уже обрабатывается. Подожди завершения.")
+        return
+    user_states[chat_id] = {"processing": True}
+    
     try:
         uid = str(uuid.uuid4())
 
@@ -33,12 +39,23 @@ def handle_stories_pipeline(chat_id, file_id):
             mp4_path
         ], check=True)
 
+
+        send_message(chat_id, "🔈 Очищаю звук от шума и дыхания...")
+        denoised_path = os.path.join(UPLOAD_DIR, f"{uid}_denoised.mp4")
+        subprocess.run([
+            "ffmpeg", "-y", "-i", mp4_path,
+            "-af", "highpass=f=150, lowpass=f=3000, afftdn=nf=-25",  # фильтры шумов и частот
+            "-c:v", "copy",
+            denoised_path
+        ], check=True)
+
+
         send_message(chat_id, "🔇 Удаляю тишину и ускоряю...")
         voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
         insert_percent = user_states.get(chat_id, {}).get('inserts_percent', 30)
         cmd = [
             "auto-editor",
-            mp4_path,
+            denoised_path,
             "--edit", "audio:threshold=3%",
             "--frame_margin", "25",
             "--video_speed", "1.2",
@@ -124,8 +141,11 @@ def handle_stories_pipeline(chat_id, file_id):
     finally:
         for f in [mov_path, mp4_path, voice_only_path, vertical_path]:
             if os.path.exists(f):
-                os.remove(f)
 
+                    if chat_id in user_states:
+                        del user_states[chat_id]
+
+                os.remove(f)
 
 def process_capcut_pipeline(chat_id, input_data):
     try:

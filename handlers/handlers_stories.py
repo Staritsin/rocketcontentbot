@@ -80,16 +80,39 @@ def handle_stories_pipeline(chat_id, file_id):
             segment_output
         ], check=True)
 
-        send_message(chat_id, "📤 Отправляю готовое видео...")
+        send_message(chat_id, "📤 Отправляю готовое         send_message(chat_id, "📤 Отправляю готовое видео...")
+
         first_part = segment_output.replace("%03d", "000")
         if os.path.exists(first_part):
+            file_size_mb = os.path.getsize(first_part) / (1024 * 1024)
+            print(f"📦 Размер файла: {file_size_mb:.2f} MB")
+
             with open(first_part, "rb") as f:
-                requests.post(
-                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendVideo",
-                    data={"chat_id": chat_id},
-                    files={"video": f}
-                )
-            send_message(chat_id, "✅ Сторис готов! 🔥")
+                if file_size_mb < 49:
+                    response = requests.post(
+                        f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendVideo",
+                        data={"chat_id": chat_id},
+                        files={"video": f}
+                    )
+                else:
+                    print("⚠️ Видео слишком большое, отправляю как документ")
+                    response = requests.post(
+                        f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendDocument",
+                        data={"chat_id": chat_id},
+                        files={"document": f}
+                    )
+
+            try:
+                result = response.json()
+                print("✅ Ответ Telegram:", result)
+                if response.status_code == 200:
+                    send_message(chat_id, "✅ Сторис готов! 🔥")
+                else:
+                    send_message(chat_id, f"⚠️ Ошибка отправки видео: {result.get('description')}")
+            except Exception as e:
+                print("❌ Ошибка обработки JSON-ответа:", e)
+                send_message(chat_id, f"❌ Ошибка: {str(e)}")
+
         else:
             send_message(chat_id, "⚠️ Видео получилось пустым или слишком коротким.")
 

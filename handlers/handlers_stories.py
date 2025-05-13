@@ -112,30 +112,33 @@ def handle_stories_pipeline(chat_id, file_id):
             print(f"📦 Размер файла: {file_size_mb:.2f} MB")
 
             with open(first_part, "rb") as f:
-                if file_size_mb < 49:
-                    response = requests.post(
-                        f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendVideo",
-                        data={"chat_id": chat_id},
-                        files={"video": f}
-                    )
-                else:
-                    print("⚠️ Видео слишком большое, отправляю как документ")
-                    response = requests.post(
-                        f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendDocument",
-                        data={"chat_id": chat_id},
-                        files={"document": f}
-                    )
+                try:
+                    if file_size_mb < 49:
+                        response = requests.post(
+                            f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendVideo",
+                            data={"chat_id": chat_id},
+                            files={"video": f}
+                        )
+                    else:
+                        print("⚠️ Видео слишком большое, отправляю как документ")
+                        response = requests.post(
+                            f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendDocument",
+                            data={"chat_id": chat_id},
+                            files={"document": f}
+                        )
+            
+                    result = response.json()
+                    print("✅ Ответ Telegram:", result)
+            
+                    if response.status_code == 200 and result.get("ok"):
+                        send_message(chat_id, "✅ Сторис готов! 🔥")
+                    else:
+                        send_message(chat_id, f"⚠️ Ошибка Telegram: {result.get('description') or 'без описания'}")
+            
+                except Exception as e:
+                    print("❌ Ошибка отправки в Telegram:", e)
+                    send_message(chat_id, f"❌ Ошибка при отправке: {str(e)}")
 
-            try:
-                result = response.json()
-                print("✅ Ответ Telegram:", result)
-                if response.status_code == 200:
-                    send_message(chat_id, "✅ Сторис готов! 🔥")
-                else:
-                    send_message(chat_id, f"⚠️ Ошибка отправки видео: {result.get('description')}")
-            except Exception as e:
-                print("❌ Ошибка обработки JSON-ответа:", e)
-                send_message(chat_id, f"❌ Ошибка: {str(e)}")
 
         else:
             send_message(chat_id, "⚠️ Видео получилось пустым или слишком коротким.")
@@ -145,11 +148,11 @@ def handle_stories_pipeline(chat_id, file_id):
     finally:
         for f in [mov_path, mp4_path, voice_only_path, vertical_path]:
             if os.path.exists(f):
-
-                    if chat_id in user_states:
-                        del user_states[chat_id]
-
                 os.remove(f)
+
+        if chat_id in user_states:
+            del user_states[chat_id]
+
 
 def process_capcut_pipeline(chat_id, input_data):
     try:

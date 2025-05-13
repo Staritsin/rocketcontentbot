@@ -80,7 +80,8 @@ def handle_stories_pipeline(chat_id, file_id):
             segment_output
         ], check=True)
 
-        send_message(chat_id, "📤 Отправляю готовое         send_message(chat_id, "📤 Отправляю готовое видео...")
+        send_message(chat_id, "📤 Отправляю готовое видео...")
+
 
         first_part = segment_output.replace("%03d", "000")
         if os.path.exists(first_part):

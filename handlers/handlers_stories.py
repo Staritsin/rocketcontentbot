@@ -81,14 +81,18 @@ def handle_stories_pipeline(chat_id, file_id):
 
         if duration < 40:
             send_message(chat_id, "🎯 Видео короче 40 сек — отправляю как есть.")
-            with open(vertical_path, "rb") as f:
-                requests.post(
-                    f"https://api.telegram.org/bot{os.environ['BOT_TOKEN']}/sendVideo",
-                    data={"chat_id": chat_id},
-                    files={"video": f}
-                )
-            send_message(chat_id, "✅ Сторис готов! 🔥")
-            return
+            first_part = vertical_path  # Просто используем его без нарезки
+        else:
+            send_message(chat_id, "✂️ Нарезаю на куски по 40 сек...")
+            segment_output = os.path.join(OUTPUT_DIR, f"{uid}_part_%03d.mp4")
+            subprocess.run([
+                "ffmpeg", "-y", "-i", vertical_path,
+                "-c", "copy", "-map", "0",
+                "-segment_time", "40", "-f", "segment",
+                segment_output
+            ], check=True)
+            first_part = segment_output.replace("%03d", "000")
+
 
         send_message(chat_id, "✂️ Нарезаю на куски по 40 сек...")
         segment_output = os.path.join(OUTPUT_DIR, f"{uid}_part_%03d.mp4")

@@ -27,6 +27,7 @@ def handle_stories_pipeline(chat_id, file_id):
         send_message(chat_id, "⏳ Видео уже обрабатывается. Подожди завершения.")
         return
     user_states[chat_id] = {"processing": True}
+    voice_only_path = None
     
     try:
         uid = str(uuid.uuid4())

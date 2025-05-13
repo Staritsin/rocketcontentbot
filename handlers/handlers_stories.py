@@ -61,10 +61,13 @@ def handle_stories_pipeline(chat_id, file_id):
         vad_audio_path = os.path.join(UPLOAD_DIR, f"{uid}_vad.wav")
         
         # Вызов фильтрации голосовой активности
-        extract_voice_segments(denoised_path, vad_audio_path)
-
-
-
+        extract_voice_segments(
+            input_path=denoised_path,
+            output_path=vad_audio_path,
+            chat_id=chat_id,
+            send_message=send_message
+        )
+        
         send_message(chat_id, "🔇 Удаляю тишину и ускоряю...")
         voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
         insert_percent = user_states.get(chat_id, {}).get('inserts_percent', 30)
@@ -74,7 +77,6 @@ def handle_stories_pipeline(chat_id, file_id):
             "--edit", "audio:threshold=3%",
             "--frame_margin", "25",
             "--video_speed", "1.2",
-         
             "--output-file", voice_only_path,
             "--video-codec", "libx264"
         ]

@@ -54,6 +54,16 @@ def handle_stories_pipeline(chat_id, file_id):
         ], check=True)
 
 
+        send_message(chat_id, "🧠 Отбираю только голос с помощью VAD...")
+
+        # Промежуточный файл только с голосом
+        vad_audio_path = os.path.join(UPLOAD_DIR, f"{uid}_vad.wav")
+        
+        # Вызов фильтрации голосовой активности
+        extract_voice_segments(denoised_path, vad_audio_path)
+
+
+
         send_message(chat_id, "🔇 Удаляю тишину и ускоряю...")
         voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
         insert_percent = user_states.get(chat_id, {}).get('inserts_percent', 30)

@@ -1,10 +1,10 @@
 import torch
 import torchaudio
-from silero_vad import get_speech_timestamps, read_audio
+from silero_vad import get_speech_timestamps, read_audio, save_audio
 import os
-from silero_vad import VoiceActivityDetector
 
-model = VoiceActivityDetector("silero_vad.jit")
+# Загружаем модель напрямую через torch
+model = torch.jit.load("silero_vad.jit")
 
 def extract_voice_segments(input_path, output_path, chat_id=None, send_message=None):
     try:
@@ -48,6 +48,16 @@ def extract_voice_segments(input_path, output_path, chat_id=None, send_message=N
 
         print(f"[VAD] Сохраняю результат: {output_path}")
         torchaudio.save(output_path, speech.unsqueeze(0), 16000)
+
+        # Проверим, что файл не пустой
+        if speech.shape[1] == 0:
+            os.remove(output_path)
+            err = "❌ Ошибка: Silero не нашёл ни одного голосового фрагмента"
+            print(f"[VAD] {err}")
+            if send_message:
+                send_message(chat_id, err)
+            return None
+
 
         if send_message:
             send_message(chat_id, "✅ Речь успешно выделена")

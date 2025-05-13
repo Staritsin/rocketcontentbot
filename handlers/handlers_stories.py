@@ -42,6 +42,8 @@ def handle_stories_pipeline(chat_id, file_id):
             "--edit", "audio:threshold=3%",
             "--frame_margin", "25",
             "--video_speed", "1.2",
+            "--add-fades",
+            "--fade-length", "0.25",
             "--output-file", voice_only_path,
             "--video-codec", "libx264"
         ]

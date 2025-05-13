@@ -18,6 +18,8 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def handle_stories_pipeline(chat_id, file_id):
+    vertical_path = None  # Чтобы не было ошибки в finally
+
 
     if user_states.get(chat_id, {}).get("processing") == True:
         send_message(chat_id, "⏳ Видео уже обрабатывается. Подожди завершения.")
@@ -59,9 +61,8 @@ def handle_stories_pipeline(chat_id, file_id):
             "--edit", "audio:threshold=3%",
             "--frame_margin", "25",
             "--video_speed", "1.2",
-            "--add-fades",
-            "--fade-length", "0.25",
-            "--output-file", voice_only_path,
+         
+            "--export_to", voice_only_path,
             "--video-codec", "libx264"
         ]
         print("Команда авто-редактора:", " ".join(cmd))

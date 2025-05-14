@@ -1,16 +1,15 @@
 import subprocess
 import os
-import uuid
 
-def remove_silence(input_path, output_path):
+def remove_silence(input_path, output_path, threshold="0.03", margin="2", fade="0.1", speed="1"):
     try:
         subprocess.run([
             "auto-editor",
             input_path,
-            "--silent-threshold", "0.03",
-            "--frame-margin", "2",
-            "--add-fade", "0.1",
-            "--video-speed", "1",
+            "--silent-threshold", threshold,
+            "--frame-margin", margin,
+            "--add-fade", fade,
+            "--video-speed", speed,
             "--export", "video",
             "--output", output_path
         ], check=True)

@@ -11,8 +11,7 @@ from handlers.handlers_capcut_api import create_reels_from_template
 from handlers.handlers_subtitles import generate_subtitles
 from handlers.handlers_publish import publish_reels
 from handlers.state import user_states
-from handlers.vad_utils import extract_voice_segments
-
+from handlers.vad_utils import remove_silence
 
 UPLOAD_DIR = "uploads"
 OUTPUT_DIR = "stories"
@@ -54,34 +53,14 @@ def handle_stories_pipeline(chat_id, file_id):
             denoised_path
         ], check=True)
 
-
-        send_message(chat_id, "🧠 Отбираю только голос с помощью VAD...")
-
-        # Промежуточный файл только с голосом
-        vad_audio_path = os.path.join(UPLOAD_DIR, f"{uid}_vad.wav")
-        
-        # Вызов фильтрации голосовой активности
-        extract_voice_segments(
-            input_path=denoised_path,
-            output_path=vad_audio_path,
-            chat_id=chat_id,
-            send_message=send_message
-        )
-        
         send_message(chat_id, "🔇 Удаляю тишину и ускоряю...")
         voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
-        insert_percent = user_states.get(chat_id, {}).get('inserts_percent', 30)
-        cmd = [
-            "auto-editor",
-            vad_audio_path,
-            "--edit", "audio:threshold=3%",
-            "--frame_margin", "25",
-            "--video_speed", "1.2",
-            "--output-file", voice_only_path,
-            "--video-codec", "libx264"
-        ]
-        print("Команда авто-редактора:", " ".join(cmd))
-        subprocess.run(cmd, check=True)
+        
+        denoised_path = remove_silence(denoised_path, voice_only_path)
+        
+        if denoised_path is None:
+            send_message(chat_id, "❌ Ошибка при удалении тишины.")
+            return
 
         send_message(chat_id, "📱 Ресайз под формат 9:16...")
         vertical_path = os.path.join(OUTPUT_DIR, f"{uid}_vertical.mp4")

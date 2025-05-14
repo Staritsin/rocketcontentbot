@@ -7,13 +7,14 @@ def remove_silence(input_path, output_path):
         subprocess.run([
             "auto-editor",
             input_path,
-             "--silent-threshold", "0.03",  # ← это чувствительность тишины
-        "--frame-margin", "2",         # ← сколько кадров оставить до/после
-        "--add-fade", "0.1",           # ← сглаживание в переходах
-        "--video-speed", "1",          # ← ускорение/замедление
+            "--edit", "audio:threshold=3%",
+            "--frame_margin", "2",
+            "--add-fade", "0.1",
+            "--video-speed", "1",
             "--export", "video",
             "--output", output_path
         ], check=True)
+
 
         return output_path  # ✅ должен быть на этом уровне, не глубже
 

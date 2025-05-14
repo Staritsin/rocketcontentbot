@@ -6,9 +6,3 @@ yt-dlp==2021.12.1
 werkzeug==2.0.3
 auto-editor==27.1.1
 openai
-torch>=2.0.0
-onnxruntime
-silero-vad @ git+https://github.com/snakers4/silero-vad
-
-
-

@@ -142,11 +142,12 @@ def handle_stories_pipeline(chat_id, file_id):
         send_message(chat_id, f"❌ Ошибка обработки: {e}")
     finally:
         for f in [mov_path, mp4_path, voice_only_path, vertical_path]:
-            if os.path.exists(f):
+            if f and os.path.exists(f):  # ✅ Проверка на None
                 os.remove(f)
-
+    
         if chat_id in user_states:
             del user_states[chat_id]
+
 
 
 def process_capcut_pipeline(chat_id, input_data):

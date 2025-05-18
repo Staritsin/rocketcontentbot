@@ -9,7 +9,6 @@ def remove_silence(input_path, output_path):
             input_path,
             "--edit", "audio:threshold=3%",
             "--frame_margin", "2",
-            "--add-fade", "0.1",
             "--video-speed", "1",
             "--export", "video",
             "--output", output_path

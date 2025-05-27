@@ -13,15 +13,19 @@ def remove_silence(input_path, output_path):
             ], check=True)
             input_path = mp4_path
 
-        # Обрезка тишины через ffmpeg silenceremove
+        # Удаление тишины
         subprocess.run([
             "ffmpeg", "-y", "-i", input_path,
-            "-af", "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:\
-detection=peak,areverse,silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:\
-detection=peak,areverse",
+            "-af", "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:"
+                   "detection=peak,areverse,"
+                   "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:"
+                   "detection=peak,areverse",
             "-c:v", "copy",
             output_path
         ], check=True)
+
+        # 👇 ВСТАВЬ СЮДА — перед return
+        print("[DEBUG] Тишина удалена. Файл сохранён:", output_path)
 
         return output_path
 

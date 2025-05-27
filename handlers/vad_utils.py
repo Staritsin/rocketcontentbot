@@ -38,6 +38,12 @@ def remove_silence(chat_id, input_path, output_path):
         send_message(chat_id, "✅ Тишина удалена. Видео готово.")
         print("[4] ✅ Успешно. Output файл:", output_path)
 
+        if not os.path.exists(output_path):
+            send_message(chat_id, f"⚠️ Auto-Editor отработал, но файл не найден: {output_path}")
+            print(f"[ОШИБКА] Нет файла после обработки: {output_path}")
+            return None
+
+
         return output_path
 
     except subprocess.CalledProcessError as e:

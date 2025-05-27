@@ -29,7 +29,6 @@ def remove_silence(chat_id, input_path, output_path):
             "--edit", "audio:threshold=3%",
             "--frame_margin", "2",
             "--video-speed", "1",
-            "--mark-as-loud", "0.02",           # <=== ДОБАВЬ ЭТУ СТРОКУ
             "--export", "default",
             "--output-file", output_path,
             "--video-codec", "libx264"

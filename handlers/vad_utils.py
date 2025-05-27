@@ -3,32 +3,32 @@ import os
 
 def remove_silence(input_path, output_path):
     try:
-        # Конвертируем .mov → .mp4, если нужно
-        if input_path.lower().endswith('.mov'):
-            mp4_path = input_path.replace('.mov', '_converted.mp4')
+        # Преобразование в mp4 если нужно
+        if not input_path.endswith(".mp4"):
+            converted = input_path.replace(".mov", "_converted.mp4")
             subprocess.run([
                 "ffmpeg", "-y", "-i", input_path,
+                "-vf", "fps=30",
                 "-vcodec", "libx264", "-acodec", "aac",
-                mp4_path
+                converted
             ], check=True)
-            input_path = mp4_path
+            input_path = converted
 
-        # Удаление тишины
+        # Удаление тишины с повторным кодированием
         subprocess.run([
-            "ffmpeg", "-y", "-i", input_path,
-            "-af", "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:"
-                   "detection=peak,areverse,"
-                   "silenceremove=start_periods=1:start_duration=0.5:start_threshold=-50dB:"
-                   "detection=peak,areverse",
-            "-c:v", "copy",
-            output_path
+            "auto-editor", input_path,
+            "--edit", "audio:threshold=4%",
+            "--frame_margin", "2",
+            "--video-speed", "1",
+            "--export", "video",
+            "--output-file", output_path,
+            "--video-codec", "libx264",
+            "--audio-codec", "aac"
         ], check=True)
 
-        # 👇 ВСТАВЬ СЮДА — перед return
-        print("[DEBUG] Тишина удалена. Файл сохранён:", output_path)
-
+        print("[DEBUG] Удаление тишины прошло успешно:", output_path)
         return output_path
 
     except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Ошибка при удалении тишины: {e}")
+        print(f"[ERROR] Ошибка auto-editor: {e}")
         return None

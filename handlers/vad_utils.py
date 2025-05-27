@@ -27,13 +27,13 @@ def remove_silence(chat_id, input_path, output_path):
             "auto-editor",
             input_path,
             "--edit", "audio:threshold=3%",
-            "--frame_margin", "5",  # 👈 увеличим запас между склейками
-            "--video-speed", "1",
-            "--mark-as-loud", "0.02",
+            "--frame_margin", "5",       # мягче склейки
+            "--video-speed", "1",        # не ускоряем
             "--export", "default",
             "--output-file", output_path,
             "--video-codec", "libx264"
         ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
         
 
 

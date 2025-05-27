@@ -1,6 +1,7 @@
 import subprocess
 import os
 
+
 def remove_silence(input_path, output_path):
     try:
         # 1. Преобразуем в MP4, если нужно
@@ -27,6 +28,7 @@ def remove_silence(input_path, output_path):
         ], check=True)
 
         print("[DEBUG] Тишина удалена. Файл сохранён:", output_path)
+        print("[DEBUG] Файлы в папке uploads:", os.listdir("uploads"))
         return output_path
 
     except subprocess.CalledProcessError as e:

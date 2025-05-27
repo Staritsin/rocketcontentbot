@@ -3,7 +3,7 @@ import os
 
 def remove_silence(input_path, output_path):
     try:
-        # Преобразование в mp4 если нужно
+        # 1. Преобразуем в MP4, если нужно
         if not input_path.endswith(".mp4"):
             converted = input_path.replace(".mov", "_converted.mp4")
             subprocess.run([
@@ -14,7 +14,7 @@ def remove_silence(input_path, output_path):
             ], check=True)
             input_path = converted
 
-        # Удаление тишины с повторным кодированием
+        # 2. Удаляем тишину через auto-editor
         subprocess.run([
             "auto-editor", input_path,
             "--edit", "audio:threshold=4%",
@@ -26,7 +26,7 @@ def remove_silence(input_path, output_path):
             "--audio-codec", "aac"
         ], check=True)
 
-        print("[DEBUG] Удаление тишины прошло успешно:", output_path)
+        print("[DEBUG] Тишина удалена. Файл сохранён:", output_path)
         return output_path
 
     except subprocess.CalledProcessError as e:

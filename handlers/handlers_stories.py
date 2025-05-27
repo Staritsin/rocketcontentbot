@@ -58,9 +58,13 @@ def handle_stories_pipeline(chat_id, file_id):
             denoised_path
         ], check=True)
 
+        print(f"[DEBUG] denoised_path до remove_silence: {denoised_path}")
+
         send_message(chat_id, "🔇 Удаляю тишину и ускоряю...")
         voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
         voice_only_path = remove_silence(chat_id, denoised_path, voice_only_path)
+        print(f"[DEBUG] voice_only_path из remove_silence: {voice_only_path}")
+
         
         if voice_only_path is None:
             send_message(chat_id, "❌ Ошибка при удалении тишины.")

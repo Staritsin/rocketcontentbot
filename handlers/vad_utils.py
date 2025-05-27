@@ -3,17 +3,17 @@ import os
 
 def remove_silence(input_path, output_path):
     try:
-        # Конвертируем в промежуточный .mp4, если входной — .mov
+        # Преобразование MOV → MP4, если нужно
         if input_path.lower().endswith('.mov'):
-            temp_mp4 = input_path.replace('.mov', '_converted.mp4')
+            mp4_path = input_path.replace('.mov', '_converted.mp4')
             subprocess.run([
                 "ffmpeg", "-y", "-i", input_path,
                 "-vcodec", "libx264", "-acodec", "aac",
-                temp_mp4
+                mp4_path
             ], check=True)
-            input_path = temp_mp4
+            input_path = mp4_path
 
-        # Удаляем тишину, сохраняем видео
+        # Удаление тишины
         subprocess.run([
             "auto-editor",
             input_path,
@@ -28,5 +28,5 @@ def remove_silence(input_path, output_path):
         return output_path
 
     except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Ошибка при обработке видео: {e}")
+        print(f"[ERROR] Ошибка при удалении тишины: {e}")
         return None

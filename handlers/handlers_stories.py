@@ -56,16 +56,17 @@ def handle_stories_pipeline(chat_id, file_id):
         send_message(chat_id, "🔇 Удаляю тишину и ускоряю...")
         voice_only_path = os.path.join(UPLOAD_DIR, f"{uid}_voice.mp4")
         
-        denoised_path = remove_silence(denoised_path, voice_only_path)
+        processed_path = remove_silence(denoised_path, voice_only_path)
         
-        if denoised_path is None:
+        if processed_path is None:
             send_message(chat_id, "❌ Ошибка при удалении тишины.")
             return
+
 
         send_message(chat_id, "📱 Ресайз под формат 9:16...")
         vertical_path = os.path.join(OUTPUT_DIR, f"{uid}_vertical.mp4")
         subprocess.run([
-            "ffmpeg", "-y", "-i", voice_only_path,
+            "ffmpeg", "-y", "-i", processed_path,
             "-vf", "scale='if(gt(a,9/16),720,-2)':'if(gt(a,9/16),-2,1280)',pad=720:1280:(ow-iw)/2:(oh-ih)/2",
             "-c:a", "copy", vertical_path
         ], check=True)
@@ -141,7 +142,7 @@ def handle_stories_pipeline(chat_id, file_id):
     except Exception as e:
         send_message(chat_id, f"❌ Ошибка обработки: {e}")
     finally:
-        for f in [mov_path, mp4_path, voice_only_path, vertical_path]:
+        for f in [mov_path, mp4_path, voice_only_path, processed_path, vertical_path]:
             if f and os.path.exists(f):  # ✅ Проверка на None
                 os.remove(f)
     

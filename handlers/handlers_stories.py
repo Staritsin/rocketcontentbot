@@ -65,12 +65,11 @@ def handle_stories_pipeline(chat_id, file_id):
         voice_only_path = remove_silence(chat_id, denoised_path, voice_only_path)
         print(f"[DEBUG] voice_only_path из remove_silence: {voice_only_path}")
 
-        
         if voice_only_path is None:
             send_message(chat_id, "❌ Ошибка при удалении тишины.")
             return
 
-
+        processed_path = voice_only_path  # <=== ВОТ ЭТА СТРОКА
 
         send_message(chat_id, "📱 Ресайз под формат 9:16...")
         vertical_path = os.path.join(OUTPUT_DIR, f"{uid}_vertical.mp4")

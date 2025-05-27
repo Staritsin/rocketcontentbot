@@ -19,7 +19,12 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def handle_stories_pipeline(chat_id, file_id):
-    vertical_path = None  # Чтобы не было ошибки в finally
+    mov_path = None
+    mp4_path = None
+    voice_only_path = None
+    processed_path = None
+    vertical_path = None
+
 
 
     if user_states.get(chat_id, {}).get("processing") == True:

@@ -1,15 +1,21 @@
 import subprocess
 import os
-from handlers.utils import send_message  # 👈 обязательно подключи
+from handlers.utils import send_message
 
 
 def remove_silence(chat_id, input_path, output_path):
     try:
+        # Этап 1: Уведомляем пользователя
+        send_message(chat_id, f"[1] 🛠️ Начинаю обработку файла: {os.path.basename(input_path)}")
+        print(f"[1] Получен файл: {input_path} → будет сохранён как: {output_path}")
+
+        # Этап 2: Составляем команду
         command = [
             "auto-editor",
             input_path,
             "--edit", "audio:threshold=2%",
             "--frame_margin", "10",
+            "--min_clip_length", "0.5",
             "--mark_as_loud", "0.015",
             "--video_speed", "1",
             "--export", "default",
@@ -17,61 +23,34 @@ def remove_silence(chat_id, input_path, output_path):
             "--video_codec", "libx264"
         ]
 
+        print(f"[2] Команда auto-editor:\n{' '.join(command)}")
 
+        # Этап 3: Запускаем auto-editor
+        send_message(chat_id, "[2] 🔇 Запускаю auto-editor...")
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
 
-        print(f"[DEBUG] Запускаю команду auto-editor:\n{' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        print(f"[3] Auto-editor stdout:\n{result.stdout}")
+        print(f"[3] Auto-editor stderr:\n{result.stderr}")
 
-        if result.returncode != 0:
-            print(f"[ERROR] Ошибка auto-editor:\n{result.stderr}")
-            return None
-
+        # Этап 4: Проверка существования выходного файла
         if not os.path.exists(output_path):
-            print("[ERROR] Выходной файл не найден после обработки.")
+            send_message(chat_id, f"⚠️ Обработка завершилась, но файл не найден: {output_path}")
+            print(f"[ОШИБКА] Файл не найден: {output_path}")
             return None
 
-        return output_path
-
-    except Exception as e:
-        print(f"[EXCEPTION] remove_silence(): {str(e)}")
-        return None
-
-
-
-        # Удаление тишины
-        send_message(chat_id, f"[3] 🔇 Запускаю auto-editor для: {os.path.basename(input_path)}")
-        print(f"[3] Запуск auto-editor для {input_path} → {output_path}")
-
-        subprocess.run([
-            "auto-editor",
-            input_path,
-            "--edit", "audio:threshold=2%",
-            "--frame_margin", "10",
-            "--min-clip-length", "0.5",
-            "--video-speed", "1",
-            "--mark-as-loud", "0.015",
-            "--export", "default",
-            "--output-file", output_path,
-            "--video-codec", "libx264"
-        ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-
-        # Успех
+        # Этап 5: Успех
         send_message(chat_id, "✅ Тишина удалена. Видео готово.")
-        print("[4] ✅ Успешно. Output файл:", output_path)
-
-        if not os.path.exists(output_path):
-            send_message(chat_id, f"⚠️ Auto-Editor отработал, но файл не найден: {output_path}")
-            print(f"[ОШИБКА] Нет файла после обработки: {output_path}")
-            return None
-
-
+        print(f"[4] ✅ Готово! Файл сохранён: {output_path}")
         return output_path
 
     except subprocess.CalledProcessError as e:
-        send_message(chat_id, f"❌ Ошибка в auto-editor: {e}")
-        stderr = e.stderr.decode() if e.stderr else "нет stderr"
-        stdout = e.stdout.decode() if e.stdout else "нет stdout"
-        print("[ОШИБКА] stderr:", stderr)
-        print("[ОШИБКА] stdout:", stdout)
+        send_message(chat_id, f"❌ Ошибка при выполнении auto-editor: {e}")
+        print(f"[ОШИБКА] subprocess error: {e}")
+        print(f"stdout: {e.stdout}")
+        print(f"stderr: {e.stderr}")
+        return None
+
+    except Exception as e:
+        send_message(chat_id, f"❌ Общая ошибка: {str(e)}")
+        print(f"[ОШИБКА] remove_silence(): {str(e)}")
         return None

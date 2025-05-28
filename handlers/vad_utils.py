@@ -2,28 +2,41 @@ import subprocess
 import os
 from handlers.utils import send_message  # 👈 обязательно подключи
 
+import subprocess
+import os
+
 def remove_silence(chat_id, input_path, output_path):
     try:
-        command = [
+        cmd = [
             "auto-editor", input_path,
-            "--edit", "audio:threshold=4%",
+            "--edit", "audio:threshold=2%",
             "--frame_margin", "6",
-            "--min-clip-length", "1.0",
+            "--min_clip_length", "1",
             "--video-speed", "1",
             "--mark-as-loud", "0.02",
+            "--cut-detector", "audio",  # важно: без 'none'
             "--export", "default",
             "--output-file", output_path,
             "--video-codec", "libx264"
         ]
 
-        print(f"[DEBUG] Running auto-editor: {' '.join(command)}")
-        subprocess.run(command, check=True)
+        print(f"[DEBUG] Запускаю команду auto-editor:\n{' '.join(cmd)}")
+        result = subprocess.run(cmd, capture_output=True, text=True)
+
+        if result.returncode != 0:
+            print(f"[ERROR] Ошибка auto-editor:\n{result.stderr}")
+            return None
+
+        if not os.path.exists(output_path):
+            print("[ERROR] Выходной файл не найден после обработки.")
+            return None
 
         return output_path
 
-    except subprocess.CalledProcessError as e:
-        print(f"[ERROR] Auto-editor failed: {e}")
+    except Exception as e:
+        print(f"[EXCEPTION] remove_silence(): {str(e)}")
         return None
+
 
 
         # Удаление тишины

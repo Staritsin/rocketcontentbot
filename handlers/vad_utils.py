@@ -23,19 +23,16 @@ def remove_silence(chat_id, input_path, output_path):
         send_message(chat_id, f"[3] 🔇 Запускаю auto-editor для: {os.path.basename(input_path)}")
         print(f"[3] Запуск auto-editor для {input_path} → {output_path}")
 
-        result = subprocess.run([
-            "auto-editor",
-            input_path,
-            "--edit", "audio:threshold=3%",
-            "--frame_margin", "5",       # мягче склейки
-            "--video-speed", "1",        # не ускоряем
+        subprocess.run([
+            "auto-editor", input_path,
+            "--edit", "audio:threshold=1.5%",
+            "--frame_margin", "6",
+            "--min-clip-length", "0.8",
+            "--video-speed", "1",
             "--export", "default",
             "--output-file", output_path,
             "--video-codec", "libx264"
-        ], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-
-        
-
+        ], check=True)
 
         # Успех
         send_message(chat_id, "✅ Тишина удалена. Видео готово.")

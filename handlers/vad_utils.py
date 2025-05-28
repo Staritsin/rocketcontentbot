@@ -2,8 +2,6 @@ import subprocess
 import os
 from handlers.utils import send_message  # 👈 обязательно подключи
 
-import subprocess
-import os
 
 def remove_silence(chat_id, input_path, output_path):
     try:

@@ -8,16 +8,15 @@ import os
 def remove_silence(chat_id, input_path, output_path):
     try:
         cmd = [
-            "auto-editor", input_path,
+            "auto-editor", path_to_input,
             "--edit", "audio:threshold=2%",
             "--frame_margin", "6",
-            "--min_clip_length", "1",
-            "--video-speed", "1",
-            "--mark-as-loud", "0.02",
-            "--cut-detector", "audio",  # важно: без 'none'
+            "--mark_as_loud", "0.02",
+            "--video_speed", "1",
+            "--cut-detector", "none",
             "--export", "default",
-            "--output-file", output_path,
-            "--video-codec", "libx264"
+            "--output_file", path_to_output,
+            "--video_codec", "libx264"
         ]
 
         print(f"[DEBUG] Запускаю команду auto-editor:\n{' '.join(cmd)}")

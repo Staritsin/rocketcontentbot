@@ -10,16 +10,22 @@ WHISPER_API_URL = 'https://api.openai.com/v1/audio/transcriptions'
 
 
 # === Отправка сообщений (с кнопками или без) ===
-def send_message(chat_id, text, buttons=None):
+def send_message(chat_id, text, buttons=None, inline=False):
     payload = {
         "chat_id": chat_id,
         "text": text
     }
+
     if buttons:
-        payload["reply_markup"] = {
-            "keyboard": [[{"text": btn} for btn in row] for row in buttons],
-            "resize_keyboard": True
-        }
+        if inline:
+            payload["reply_markup"] = {
+                "inline_keyboard": [[{"text": btn, "callback_data": btn} for btn in row] for row in buttons]
+            }
+        else:
+            payload["reply_markup"] = {
+                "keyboard": [[{"text": btn} for btn in row] for row in buttons],
+                "resize_keyboard": True
+            }
 
     requests.post(TELEGRAM_API_URL, json=payload)
 

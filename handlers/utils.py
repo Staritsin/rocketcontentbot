@@ -33,6 +33,16 @@ def get_file_url(file_id):
     return f"{TELEGRAM_FILE_API}{file_path}"
 
 
+def send_video(chat_id, video_path):
+    with open(video_path, "rb") as f:
+        response = requests.post(
+            f"https://api.telegram.org/bot{BOT_TOKEN}/sendVideo",
+            data={"chat_id": chat_id},
+            files={"video": f}
+        )
+    return response
+
+
 # === Скачивание файла из Telegram ===
 def download_telegram_file(file_id, local_path):
     file_path = requests.get(

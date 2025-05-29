@@ -19,11 +19,11 @@ def remove_silence(chat_id, input_path, output_path):
             "--mark_as_loud", "0.015",
             "--video_speed", "1",
             "--export", "default",
-            "--video_codec", "libx264",
-            "--audio_codec", "aac",
-            "--scale", "1280x720"
             "--output_file", output_path,
+            "--video_codec", "libx264",
+            "--audio_codec", "aac"
         ]
+
 
         print(f"[2] Команда auto-editor:\n{' '.join(command)}")
 

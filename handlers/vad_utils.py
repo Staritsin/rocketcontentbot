@@ -13,12 +13,13 @@ def remove_silence(chat_id, input_path, output_path):
         command = [
             "auto-editor",
             input_path,
-            "--edit", "audio:threshold=2%",
+            "--edit", "audio:threshold=0.5%",
+            
             "--frame_margin", "10",
             "--min_clip_length", "0.5",
-            "--mark_as_loud", "0.015",
+            "--mark_as_loud", "0.01",
             "--video_speed", "1",
-            "--export", "default",
+            "--export", "video",
             "--output_file", output_path,
             "--video_codec", "libx264",
             "--audio_codec", "aac"
@@ -30,6 +31,8 @@ def remove_silence(chat_id, input_path, output_path):
         # Этап 3: Запускаем auto-editor
         send_message(chat_id, "[2] 🔇 Запускаю auto-editor...")
         result = subprocess.run(command, capture_output=True, text=True, check=True)
+
+        
 
         print(f"[3] Auto-editor stdout:\n{result.stdout}")
         print(f"[3] Auto-editor stderr:\n{result.stderr}")

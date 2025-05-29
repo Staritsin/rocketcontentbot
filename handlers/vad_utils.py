@@ -7,6 +7,8 @@ from handlers.utils import send_message
 
 def remove_silence(chat_id, input_path, output_path):
     try:
+        normalized_path = input_path  # по умолчанию, если не нужно перекодировать
+        
         # Этап 1: Уведомляем пользователя
         send_message(chat_id, f"[1] 🛠️ Начинаю обработку файла: {os.path.basename(input_path)}")
         print(f"[1] Получен файл: {input_path} → будет сохранён как: {output_path}")

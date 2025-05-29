@@ -3,6 +3,7 @@ import os
 from handlers.utils import send_message
 
 
+
 def remove_silence(chat_id, input_path, output_path):
     try:
         # Этап 1: Уведомляем пользователя
@@ -10,20 +11,40 @@ def remove_silence(chat_id, input_path, output_path):
         print(f"[1] Получен файл: {input_path} → будет сохранён как: {output_path}")
 
         # Этап 2: Составляем команду
+
+        # 🧠 Проверка наличия аудио и видео дорожек
+        import ffmpeg
+        
+        try:
+            probe = ffmpeg.probe(input_path)
+            video_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'video']
+            audio_streams = [stream for stream in probe['streams'] if stream['codec_type'] == 'audio']
+            if not video_streams:
+                send_message(chat_id, "❌ В файле нет видеопотока. Пропускаем.")
+                return
+            if not audio_streams:
+                send_message(chat_id, "❌ В файле нет звука. Обработка невозможна.")
+                return
+        except Exception as e:
+            send_message(chat_id, f"⚠️ ffprobe вызвал ошибку: {str(e)}")
+            return
+        
+        # 👇 Команда
         command = [
             "auto-editor",
             input_path,
-            "--edit", "audio:threshold=0.5%",
+            "--edit", "audio",
+            "--silent_threshold", "0.03",
             "--frame_margin", "10",
             "--min_clip_length", "0.5",
             "--mark_as_loud", "0.015",
             "--video_speed", "1",
-            "--export", "video",  # ✅ ← запятая тут ОБЯЗАТЕЛЬНА
+            "--export", "video",
             "--output_file", output_path,
             "--video_codec", "libx264",
-            "--audio_codec", "aac"
+            "--audio_codec", "aac",
         ]
-
+        
         print(f"[2] Команда auto-editor:\n{' '.join(command)}")
 
         # Этап 3: Запускаем auto-editor

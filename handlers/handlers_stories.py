@@ -69,7 +69,7 @@ def handle_stories_pipeline(chat_id, file_id):
             user_states[chat_id] = {}
             return
         
-        merged_path = merge_videos(cleaned_paths, os.path.join(OUTPUT_DIR, f"{file_id}_merged.mp4"))
+        merged_path = merge_videos(chat_id, cleaned_paths, os.path.join(OUTPUT_DIR, f"{file_id}_merged.mp4"))
         
         send_message(chat_id, "✅ Видео обработано и склеено. Что делаем дальше?", buttons=[
             ["📤 Опубликовать", "🎬 Наложить субтитры"]

@@ -1,5 +1,6 @@
 import subprocess
 import os
+import ffmpeg
 from handlers.utils import send_message
 
 
@@ -13,7 +14,7 @@ def remove_silence(chat_id, input_path, output_path):
         # Этап 2: Составляем команду
 
         # 🧠 Проверка наличия аудио и видео дорожек
-        import ffmpeg
+       
         
         try:
             probe = ffmpeg.probe(input_path)
@@ -25,7 +26,32 @@ def remove_silence(chat_id, input_path, output_path):
             if not audio_streams:
                 send_message(chat_id, "❌ В файле нет звука. Обработка невозможна.")
                 return
+                
+            # 🎞️ Шаг доп. Подготовка: нормализуем нестабильные форматы (mov/webm/mkv)
+            if input_path.endswith((".mov", ".webm", ".mkv")):
+                send_message(chat_id, "🧰 Конвертирую видео в стабильный формат перед вырезкой тишины...")
+        
+                normalized_path = input_path.replace(".mov", "_normalized.mp4").replace(".webm", "_normalized.mp4").replace(".mkv", "_normalized.mp4")
+        
+                convert_cmd = [
+                    "ffmpeg", "-y", "-i", input_path,
+                    "-vf", "fps=30,scale=720:1280",
+                    "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+                    "-c:a", "aac", "-b:a", "128k",
+                    normalized_path
+                ]
+                
+                result = subprocess.run(convert_cmd, capture_output=True, text=True)
+                print(f"[🪵] FFmpeg нормализация stdout:\n{result.stdout}")
+                print(f"[🪵] FFmpeg нормализация stderr:\n{result.stderr}")
+        
+                if result.returncode != 0 or not os.path.exists(normalized_path):
+                    send_message(chat_id, "❌ Ошибка при нормализации видео. Прерываю обработку.")
+                    return
+                
+                input_path = normalized_path  # заменяем путь на новый
 
+            
         # 👇 Команда
             command = [
                 "auto-editor",

@@ -165,7 +165,9 @@ def handle_stories_pipeline(chat_id, file_id):
                     print("✅ Ответ Telegram:", result)
             
                     if response.status_code == 200 and result.get("ok"):
-                        send_message(chat_id, "✅ Сторис готов! 🔥")
+                        from handlers.handlers_rewrite import send_video_action_buttons
+                        send_video_action_buttons(chat_id)
+                        
                     else:
                         send_message(chat_id, f"⚠️ Ошибка Telegram: {result.get('description') or 'без описания'}")
             

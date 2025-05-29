@@ -253,11 +253,18 @@ def telegram_webhook():
 
     return jsonify(success=True)
 
-def send_message(chat_id, text):
-    requests.post(TELEGRAM_API_URL, json={
+def send_message(chat_id, text, buttons=None):
+    payload = {
         'chat_id': chat_id,
         'text': text
-    })
+    }
+    if buttons:
+        payload['reply_markup'] = {
+            'keyboard': [[{'text': btn} for btn in row] for row in buttons],
+            'resize_keyboard': True
+        }
+
+    requests.post(TELEGRAM_API_URL, json=payload)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, threaded=True)

@@ -3,7 +3,7 @@ import tempfile
 import subprocess
 from handlers.vad_utils import remove_silence
 
-def process_and_merge_videos(chat_id, video_paths, final_output_path):
+def merge_videos(chat_id, video_paths, final_output_path):
     processed_paths = []
 
     for i, path in enumerate(video_paths):

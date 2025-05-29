@@ -30,21 +30,19 @@ def remove_silence(chat_id, input_path, output_path):
             return
         
         # 👇 Команда
-        command = [
-            "auto-editor",
-            input_path,
-            "--edit", "audio",
-            "--silent_threshold", "0.03",
-            "--frame_margin", "10",
-            "--min_clip_length", "0.5",
-            "--mark_as_loud", "0.015",
-            "--video_speed", "1",
-            "--export", "video",
-            "--output_file", output_path,
-            "--video_codec", "libx264",
-            "--audio_codec", "aac",
-        ]
-        
+            command = [
+                "auto-editor",
+                input_path,
+                "--edit", "audio:threshold=4%",
+                "--frame_margin", "2",
+                "--video-speed", "1",
+                "--export", "video",
+                "--output-file", output_path,
+                "--video-codec", "libx264",
+                "--audio-codec", "aac",
+                "--force_output", "true"
+            ]
+
         print(f"[2] Команда auto-editor:\n{' '.join(command)}")
 
         # Этап 3: Запускаем auto-editor

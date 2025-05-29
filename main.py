@@ -3,6 +3,7 @@ from flask import send_from_directory
 import requests
 import os
 from telegram import InlineKeyboardButton
+from handlers.handlers_rewrite import handle_callback_query
 from handlers.handlers_video import handle_video
 from handlers.handlers_stories import handle_stories_pipeline
 from handlers.handlers_reels import handle_transcribe
@@ -51,6 +52,11 @@ def telegram_webhook():
         requests.post(f"https://api.telegram.org/bot{BOT_TOKEN}/answerCallbackQuery", json={
             'callback_query_id': callback_id
         })
+
+        # 👇 Обработка наших кастомных кнопок
+        if query_data in ['publish', 'add_inserts', 'add_subtitles']:
+            handle_callback_query(callback)
+            return jsonify(success=True)
 
         if handle_callback_rating(query_data, chat_id):
             return jsonify(success=True)

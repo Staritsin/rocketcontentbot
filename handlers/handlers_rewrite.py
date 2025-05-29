@@ -80,3 +80,40 @@ def handle_rewrite_transcript(chat_id):
             'chat_id': chat_id,
             'text': f"❌ Ошибка рерайта: {e}"
         })
+
+
+def send_video_action_buttons(chat_id):
+    keyboard = [
+        [InlineKeyboardButton("🚀 Опубликовать", callback_data='publish')],
+        [InlineKeyboardButton("🧱 Наложить вставки", callback_data='add_inserts')],
+        [InlineKeyboardButton("🧾 Наложить субтитры", callback_data='add_subtitles')]
+    ]
+    reply_markup = {
+        'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]
+    }
+
+    requests.post(TELEGRAM_API_URL, json={
+        'chat_id': chat_id,
+        'text': "✅ Видео готово! Что дальше? 👇",
+        'reply_markup': reply_markup
+    })
+
+def handle_callback_query(callback):
+    chat_id = callback['message']['chat']['id']
+    data = callback['data']
+
+    if data == 'publish':
+        text = "🚀 Ок, публикую... (здесь будет логика публикации)"
+    elif data == 'add_inserts':
+        text = "🧱 Добавляю вставки... (здесь будет логика вставок)"
+    elif data == 'add_subtitles':
+        text = "🧾 Накладываю субтитры... (здесь будет логика субтитров)"
+    elif data == 'menu':
+        text = "🔙 Возвращаю в меню..."
+    else:
+        text = f"❓ Неизвестная команда: {data}"
+
+    requests.post(TELEGRAM_API_URL, json={
+        'chat_id': chat_id,
+        'text': text
+    })

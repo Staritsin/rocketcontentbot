@@ -12,6 +12,8 @@ from handlers.handlers_subtitles import generate_subtitles
 from handlers.handlers_publish import publish_reels
 from handlers.state import user_states
 from handlers.vad_utils import remove_silence
+from handlers.video_merge import merge_videos  # 👈 вставь это
+
 
 UPLOAD_DIR = "uploads"
 OUTPUT_DIR = "stories"
@@ -47,6 +49,34 @@ def handle_stories_pipeline(chat_id, file_id):
             "-vcodec", "libx264", "-acodec", "aac",
             mp4_path
         ], check=True)
+
+        # 🔽 Вставить вот это:
+        video_paths = [mp4_path] if isinstance(mp4_path, str) else mp4_path
+        cleaned_paths = []
+        
+        for path in video_paths:
+            cleaned_path = path.replace(".mp4", "_cleaned.mp4")
+            send_message(chat_id, f"[🧹] Чищу {os.path.basename(path)}...")
+            try:
+                cleaned = remove_silence(chat_id, path, cleaned_path)
+                if cleaned:
+                    cleaned_paths.append(cleaned)
+            except Exception as e:
+                send_message(chat_id, f"❌ Ошибка при удалении тишины: {e}")
+        
+        if not cleaned_paths:
+            send_message(chat_id, "❌ Не удалось очистить видео от тишины.")
+            user_states[chat_id] = {}
+            return
+        
+        merged_path = merge_videos(cleaned_paths, os.path.join(OUTPUT_DIR, f"{file_id}_merged.mp4"))
+        
+        send_message(chat_id, "✅ Видео обработано и склеено. Что делаем дальше?", buttons=[
+            ["📤 Опубликовать", "🎬 Наложить субтитры"]
+        ])
+        send_video(chat_id, merged_path)
+        
+        user_states[chat_id] = {}
 
 
         send_message(chat_id, "🔈 Очищаю звук от шума и дыхания...")

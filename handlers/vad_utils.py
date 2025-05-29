@@ -37,7 +37,7 @@ def remove_silence(chat_id, input_path, output_path):
                 "--output-file", output_path,
                 "--video-codec", "libx264",
                 "--audio-codec", "aac",
-               
+                "--overwrite"
             ]
 
 

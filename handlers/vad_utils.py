@@ -18,7 +18,10 @@ def remove_silence(chat_id, input_path, output_path):
             "--min_clip_length", "0.5",
             "--mark_as_loud", "0.015",
             "--video_speed", "1",
-            "--export", "video",
+            "--export", "default",
+            "--video_codec", "libx264",
+            "--audio_codec", "aac",
+            "--scale", "1280x720"
             "--output_file", output_path,
         ]
 

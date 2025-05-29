@@ -18,16 +18,20 @@ def send_message(chat_id, text, buttons=None, inline=False):
 
     if buttons:
         if inline:
-            payload["reply_markup"] = {
-                "inline_keyboard": [[{"text": btn, "callback_data": btn} for btn in row] for row in buttons]
+            payload['reply_markup'] = {
+                'inline_keyboard': [[btn for btn in row] for row in buttons]
             }
         else:
-            payload["reply_markup"] = {
-                "keyboard": [[{"text": btn} for btn in row] for row in buttons],
-                "resize_keyboard": True
+            payload['reply_markup'] = {
+                'keyboard': [[{'text': btn} for btn in row] for row in buttons],
+                'resize_keyboard': True
             }
+    else:
+        # Удаляем клавиатуру, если кнопки не переданы
+        payload['reply_markup'] = {"remove_keyboard": True}
 
     requests.post(TELEGRAM_API_URL, json=payload)
+
 
 
 # === Получение URL файла по file_id ===

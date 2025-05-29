@@ -52,6 +52,16 @@ def remove_silence(chat_id, input_path, output_path):
         send_message(chat_id, "[2] 🔇 Запускаю auto-editor...")
         result = subprocess.run(command, capture_output=True, text=True, check=True)
         
+        # 💡 Проверка: файл существует и не пустой
+        if not os.path.exists(output_path) or os.path.getsize(output_path) < 1000:
+            send_message(chat_id, "❌ Итоговый файл пустой или не записан. Проверь output_path.")
+            print(f"[ОШИБКА] Пустой или повреждённый файл: {output_path}")
+            return
+        
+        # 🖨️ Логи stdout/stderr для отладки
+        print(f"[3] Auto-editor stdout:\n{result.stdout}")
+        print(f"[3] Auto-editor stderr:\n{result.stderr}")
+                
 
         # ⬇️ Проверка кодека через ffprobe (добавь сразу после запуска auto-editor)
         probe = subprocess.run([

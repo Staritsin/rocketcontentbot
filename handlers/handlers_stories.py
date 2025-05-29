@@ -1,4 +1,7 @@
 import os
+BOT_TOKEN = os.environ.get('BOT_TOKEN')
+TELEGRAM_API_URL = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage"
+
 import uuid
 import requests
 import subprocess
@@ -231,3 +234,55 @@ def process_capcut_pipeline(chat_id, input_data):
 
     except Exception as e:
         send_message(chat_id, f"❌ Ошибка генерации Reels: {e}")
+
+
+
+import requests
+from moviepy.editor import concatenate_videoclips, VideoFileClip
+from handlers.handlers_rewrite import send_video_action_buttons
+
+def process_stories_multiple(chat_id, video_ids):
+    local_paths = []
+    for i, file_id in enumerate(video_ids):
+        # Получаем ссылку на файл
+        file_info = requests.get(f"https://api.telegram.org/bot{BOT_TOKEN}/getFile?file_id={file_id}").json()
+        file_path = file_info["result"]["file_path"]
+        file_url = f"https://api.telegram.org/file/bot{BOT_TOKEN}/{file_path}"
+
+        # Скачиваем файл
+        local_file = f"uploads/video_{chat_id}_{i}.mp4"
+        with open(local_file, "wb") as f:
+            f.write(requests.get(file_url).content)
+        local_paths.append(local_file)
+
+    # Склеиваем видео
+    try:
+        clips = [VideoFileClip(p, audio=True) for p in local_paths]
+
+        final_clip = concatenate_videoclips(clips)
+        output_path = f"stories/final_{chat_id}.mp4"
+        final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+
+        # Отправляем пользователю
+        with open(output_path, "rb") as video:
+            requests.post(
+                f"https://api.telegram.org/bot{BOT_TOKEN}/sendVideo",
+                data={"chat_id": chat_id},
+                files={"video": video}
+            )
+    
+        # Удаляем временные файлы
+        for path in local_paths:
+            os.remove(path)
+        if os.path.exists(output_path):
+            os.remove(output_path)
+
+        # Кнопки
+        send_video_action_buttons(chat_id)
+
+    except Exception as e:
+        requests.post(TELEGRAM_API_URL, json={
+            'chat_id': chat_id,
+            'text': f"❌ Ошибка склейки: {e}"
+        })
+

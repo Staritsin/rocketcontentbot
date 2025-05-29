@@ -30,7 +30,7 @@ def remove_silence(chat_id, input_path, output_path):
             command = [
                 "auto-editor",
                 input_path,
-                "--edit", "audio:threshold=4%",
+                "--edit", "audio:threshold=2%",
                 "--frame_margin", "2",
                 "--video-speed", "1",
                 "--export", "video",
@@ -51,6 +51,7 @@ def remove_silence(chat_id, input_path, output_path):
         # Этап 3: Запускаем auto-editor
         send_message(chat_id, "[2] 🔇 Запускаю auto-editor...")
         result = subprocess.run(command, capture_output=True, text=True, check=True)
+        
 
         # ⬇️ Проверка кодека через ffprobe (добавь сразу после запуска auto-editor)
         probe = subprocess.run([

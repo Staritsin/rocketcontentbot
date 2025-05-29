@@ -25,10 +25,7 @@ def remove_silence(chat_id, input_path, output_path):
             if not audio_streams:
                 send_message(chat_id, "❌ В файле нет звука. Обработка невозможна.")
                 return
-        except Exception as e:
-            send_message(chat_id, f"⚠️ ffprobe вызвал ошибку: {str(e)}")
-            return
-        
+
         # 👇 Команда
             command = [
                 "auto-editor",
@@ -43,7 +40,13 @@ def remove_silence(chat_id, input_path, output_path):
                 "--force_output", "true"
             ]
 
+
         print(f"[2] Команда auto-editor:\n{' '.join(command)}")
+        
+        except Exception as e:
+            send_message(chat_id, f"⚠️ ffprobe вызвал ошибку: {str(e)}")
+            return
+
 
         # Этап 3: Запускаем auto-editor
         send_message(chat_id, "[2] 🔇 Запускаю auto-editor...")

@@ -20,7 +20,19 @@ OUTPUT_DIR = "stories"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+
 def handle_stories_pipeline(chat_id, file_id):
+if chat_id not in user_states:
+    user_states[chat_id] = {'mode': 'stories_processing', 'video_ids': []}
+
+user_states[chat_id]['video_ids'].append(file_id)
+video_ids = user_states[chat_id]['video_ids']
+
+# Запускаем независимо от количества видео
+del user_states[chat_id]
+process_stories_multiple(chat_id, video_ids)
+
+    
     mov_path = None
     mp4_path = None
     voice_only_path = None

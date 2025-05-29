@@ -4,6 +4,7 @@ import requests
 import subprocess
 import ffmpeg  # добавлен
 from handlers.utils import send_message, download_telegram_file
+from handlers.utils import send_video
 from handlers.handlers_rewrite import handle_rewrite_transcript as handle_rewrite_text
 from handlers.handlers_gpt_keywords import extract_keywords_from_text
 from handlers.handlers_pexels import get_pexels_clips

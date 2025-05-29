@@ -41,7 +41,7 @@ def remove_silence(chat_id, input_path, output_path):
             ]
 
 
-        print(f"[2] Команда auto-editor:\n{' '.join(command)}")
+            print(f"[2] Команда auto-editor:\n{' '.join(command)}")
         
         except Exception as e:
             send_message(chat_id, f"⚠️ ffprobe вызвал ошибку: {str(e)}")

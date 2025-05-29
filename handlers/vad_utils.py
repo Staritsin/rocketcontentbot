@@ -55,15 +55,16 @@ def remove_silence(chat_id, input_path, output_path):
         # 👇 Команда
             command = [
                 "auto-editor",
-                input_path,
+                normalized_path,
                 "--edit", "audio:threshold=2%",
                 "--frame_margin", "2",
-                "--video-speed", "1",
+                "--video_speed", "1",
                 "--export", "video",
                 "--output-file", output_path,
-                "--video-codec", "libx264",
-                "--audio-codec", "aac",
-                "--overwrite"
+                "--video_codec", "libx264",
+                "--audio_codec", "aac",
+                "--overwrite",
+                "--no-open"
             ]
 
 

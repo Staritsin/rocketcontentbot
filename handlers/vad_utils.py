@@ -42,7 +42,11 @@ def remove_silence(chat_id, input_path, output_path):
         ], capture_output=True, text=True)
         
         print(f"[4] ffprobe:\n{probe.stdout}")
-        
+
+        if not probe.stdout.strip():
+            send_message(chat_id, "⚠️ ffprobe не вернул данных. Видео может быть повреждено.")
+            print(f"[ОШИБКА] ffprobe не дал результата по файлу: {output_path}")
+                
 
         print(f"[3] Auto-editor stdout:\n{result.stdout}")
         print(f"[3] Auto-editor stderr:\n{result.stderr}")

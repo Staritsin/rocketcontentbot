@@ -14,10 +14,9 @@ def remove_silence(chat_id, input_path, output_path):
             "auto-editor",
             input_path,
             "--edit", "audio:threshold=0.5%",
-            
             "--frame_margin", "10",
             "--min_clip_length", "0.5",
-            "--mark_as_loud", "0.01",
+            "--mark_as_loud", "0.015",
             "--video_speed", "1",
             "--export", "video",
             "--output_file", output_path,

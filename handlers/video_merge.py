@@ -27,10 +27,16 @@ def merge_videos(chat_id, video_paths, final_output_path):
             "-f", "concat",
             "-safe", "0",
             "-i", list_file,
-            "-c", "copy",
+            "-vf", "format=yuv420p",
+            "-c:v", "libx264",
+            "-preset", "fast",
+            "-crf", "23",
+            "-c:a", "aac",
+            "-b:a", "128k",
             final_output_path
         ], check=True)
         return final_output_path
+
 
     except subprocess.CalledProcessError as e:
         print(f"[ERROR] Ошибка склейки видео: {e}")

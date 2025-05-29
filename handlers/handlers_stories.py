@@ -257,11 +257,31 @@ def process_stories_multiple(chat_id, video_ids):
 
     # Склеиваем видео
     try:
-        clips = [VideoFileClip(p, audio=True) for p in local_paths]
+        # Проверка файлов перед склейкой
+        if not local_paths:
+            send_message(chat_id, "❌ Не удалось загрузить видео для склейки.")
+            return
+        
+        for path in local_paths:
+            if not os.path.exists(path):
+                send_message(chat_id, f"❌ Файл не найден: {path}")
+                return
+        
+        try:
+            clips = [VideoFileClip(p, audio=True) for p in local_paths]
+        except Exception as e:
+            send_message(chat_id, f"❌ Ошибка чтения видео: {e}")
+            return
+
 
         final_clip = concatenate_videoclips(clips)
         output_path = f"stories/final_{chat_id}.mp4"
         final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+        
+        if not os.path.exists(output_path):
+            send_message(chat_id, f"❌ Итоговое видео не создано: {output_path}")
+            return
+
 
         # Отправляем пользователю
         with open(output_path, "rb") as video:

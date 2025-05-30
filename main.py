@@ -3,6 +3,7 @@ from flask import send_from_directory
 import requests
 import os
 from telegram import InlineKeyboardButton
+from handlers.handlers_buttons import handle_user_choice
 from handlers.handlers_rewrite import handle_callback_query
 from handlers.handlers_video import handle_video
 from handlers.handlers_stories import handle_stories_pipeline
@@ -254,6 +255,14 @@ def telegram_webhook():
                 send_message(chat_id, "\ud83d\udcda Что я умею:\n\n/menu — главное меню\n/stats — статистика\n/help — список команд\n/about — кто я и зачем\n\n✉️ Отправь видео, голос или текст — и я всё обработаю!")
             elif text.lower() == '/about':
                 send_message(chat_id, "\ud83e\udd16 Обо мне:\nЯ — бот Александра Старицина, эксперта по нейросетям и автоматизации бизнеса.\n\nЯ помогаю тебе:\n— расшифровывать голос и видео\n— делать Reels из шаблона\n— генерировать и публиковать посты\n— работать с CapCut, Telegram, Instagram\n\n\ud83c\udf10 Подробнее: https://revolife.ru")
+            
+            # 🧠 Обработка быстрых команд после получения видео
+            if chat_id in user_states and "last_video_path" in user_states[chat_id]:
+                video_path = user_states[chat_id]["last_video_path"]
+                from handlers.handlers_buttons import handle_user_choice
+                handle_user_choice(chat_id, text, video_path)
+                return jsonify(success=True)
+                
             else:
                 send_message(chat_id, "✅ Бот получил сообщение!")
 

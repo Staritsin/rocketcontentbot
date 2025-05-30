@@ -55,27 +55,34 @@ def handle_stories_pipeline(chat_id, file_id):
 
         # 🔽 Вставить вот это:
         video_paths = [mp4_path] if isinstance(mp4_path, str) else mp4_path
-        cleaned_paths = []
+
+        send_message(chat_id, "🧩 Объединяю видео...")
         
-        for path in video_paths:
-            cleaned_path = path.replace(".mp4", "_cleaned.mp4")
-            send_message(chat_id, f"[🧹] Чищу {os.path.basename(path)}...")
-            try:
-                cleaned = remove_silence(chat_id, path, cleaned_path)
-                if cleaned:
-                    cleaned_paths.append(cleaned)
-            except Exception as e:
-                send_message(chat_id, f"❌ Ошибка при удалении тишины: {e}")
+        merged_temp_path = os.path.join(OUTPUT_DIR, f"{file_id}_merged_raw.mp4")
+        merged_path = os.path.join(OUTPUT_DIR, f"{file_id}_merged.mp4")
         
-        if not cleaned_paths:
-            send_message(chat_id, "❌ Не удалось очистить видео от тишины.")
+        merged_ok = merge_videos(chat_id, video_paths, merged_temp_path)
+        
+        if not merged_ok or not os.path.exists(merged_temp_path):
+            send_message(chat_id, "❌ Ошибка: merge_videos не создал промежуточный файл.")
             user_states[chat_id] = {}
             return
         
-        merged_path = merge_videos(chat_id, cleaned_paths, os.path.join(OUTPUT_DIR, f"{file_id}_merged.mp4"))
-        if merged_path is None:
-            send_message(chat_id, "❌ Ошибка: merge_videos не вернул итоговое видео.")
+        send_message(chat_id, "🧹 Удаляю тишину после склейки...")
+        cleaned_path = remove_silence(chat_id, merged_temp_path, merged_path)
+        
+        if not cleaned_path or not os.path.exists(cleaned_path):
+            send_message(chat_id, "❌ Ошибка при удалении тишины после склейки.")
+            user_states[chat_id] = {}
             return
+
+        
+        send_message(chat_id, "✅ Видео готово. Что делаем дальше?", buttons=[
+            ["1️⃣ Опубликовать", "2️⃣ Субтитры", "3️⃣ Вставки"],
+            ["4️⃣ Всё сразу"]
+        ])
+        send_video(chat_id, cleaned_path)
+
 
         
         send_message(chat_id, "✅ Видео обработано и склеено. Что делаем дальше?", buttons=[

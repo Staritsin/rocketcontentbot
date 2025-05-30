@@ -23,36 +23,20 @@ OUTPUT_DIR = "stories"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
-
 def handle_stories_pipeline(chat_id, file_id):
-    if chat_id not in user_states:
-        user_states[chat_id] = {'mode': 'stories_processing', 'video_ids': []}
-    
-    user_states[chat_id]['video_ids'].append(file_id)
-    
-    if file_id in user_states[chat_id]['video_ids']:
-        send_message(chat_id, "⚠️ Это видео уже в очереди на обработку.")
+    # Проверяем, если уже идёт обработка — не запускаем повторно
+    if user_states.get(chat_id, {}).get("processing"):
+        send_message(chat_id, "⏳ Видео уже обрабатывается. Подожди завершения.")
         return
         
-    video_ids = user_states[chat_id]['video_ids']
-    
-    # Запускаем независимо от количества видео
-    del user_states[chat_id]
-    
+    # Устанавливаем флаг обработки
+    user_states[chat_id] = {"processing": True}
     
     mov_path = None
     mp4_path = None
     voice_only_path = None
     processed_path = None
     vertical_path = None
-
-
-
-    if user_states.get(chat_id, {}).get("processing") == True:
-        send_message(chat_id, "⏳ Видео уже обрабатывается. Подожди завершения.")
-        return
-    user_states[chat_id] = {"processing": True}
-    voice_only_path = None
     
     try:
         uid = str(uuid.uuid4())

@@ -40,7 +40,8 @@ user_states = {}
 def index():
     return 'Бот работает!'
 
-@app.route('/telegram', methods=['POST'])
+@app.route('/webhook', methods=['POST'])
+
 def telegram_webhook():
     data = request.get_json()
     print("\U0001F525 Получены данные от Telegram:", data)

@@ -184,6 +184,13 @@ def telegram_webhook():
         if 'text' in message:
             text = message['text']
 
+
+            if text.strip() in ["1", "2", "3", "4", "1️⃣ Опубликовать", "2️⃣ Субтитры", "3️⃣ Вставки", "4️⃣ Всё сразу"]:
+                from handlers.handlers_buttons import handle_user_choice
+                handle_user_choice(chat_id, text.strip())
+                return
+
+
             if text == "📖 Stories":
                 send_message(chat_id, "📖 Отлично! Отправь видео, я сделаю Stories со вставками и субтитрами.")
                 user_states[chat_id] = {'mode': 'stories_processing'}

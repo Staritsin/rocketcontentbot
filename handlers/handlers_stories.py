@@ -29,6 +29,11 @@ def handle_stories_pipeline(chat_id, file_id):
         user_states[chat_id] = {'mode': 'stories_processing', 'video_ids': []}
     
     user_states[chat_id]['video_ids'].append(file_id)
+    
+    if file_id in user_states[chat_id]['video_ids']:
+        send_message(chat_id, "⚠️ Это видео уже в очереди на обработку.")
+        return
+        
     video_ids = user_states[chat_id]['video_ids']
     
     # Запускаем независимо от количества видео

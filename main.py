@@ -198,29 +198,10 @@ def telegram_webhook():
 
 
             if text == "📖 Stories":
-                send_message(chat_id, "📖 Отлично! Выбери, что сделать с видео 👇", buttons=[
-                    ["🎬 Обработать", "🔗 Соединить 2 и более"],
-                    ["📤 Опубликовать готовое"]
-                ])
-
-                if user_states.get(chat_id, {}).get("mode") == "awaiting_stories_action":
-                    if text == "🎬 Обработать":
-                        user_states[chat_id] = {'mode': 'stories_processing'}
-                        send_message(chat_id, "🎬 Окей! Отправь видео для обработки.")
-                        return jsonify(success=True)
-                    elif text == "🔗 Соединить 2 и более":
-                        user_states[chat_id] = {'mode': 'stories_multiple'}
-                        send_message(chat_id, "🔗 Хорошо! Отправь 2 или больше видео подряд.")
-                        return jsonify(success=True)
-                    elif text == "📤 Опубликовать готовое":
-                        send_message(chat_id, "📤 Отправь готовое видео или картинку — я опубликую.")
-                        user_states[chat_id] = {'mode': 'publish_ready'}
-                        return jsonify(success=True)
-                        
-                
-                user_states[chat_id] = {'mode': 'awaiting_stories_action'}
+                from handlers.handlers_buttons import send_story_action_buttons
+                send_story_action_buttons(chat_id)
                 return jsonify(success=True)
-        
+
             elif text == "🎬 REELS":
                 send_message(chat_id, "🎬 Готово! Отправь видео или ссылку — сделаю Reels по шаблону.")
                 user_states[chat_id] = {"mode": "capcut_generation"}

@@ -275,6 +275,8 @@ def telegram_webhook():
                     'reply_markup': reply_markup.to_dict()
                 })
 
+                return jsonify(success=True)
+
             elif text.lower() == '/stats':
                 from handlers.telegram_webhook_fix import handle_stats_request
                 handle_stats_request(chat_id)

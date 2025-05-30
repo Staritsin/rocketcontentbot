@@ -3,6 +3,7 @@ from flask import send_from_directory
 import requests
 import os
 from handlers.utils import send_message
+from handlers.utils import TELEGRAM_API_URL
 from handlers.handlers_buttons import send_story_action_buttons
 from handlers.handlers_buttons import handle_story_action_callback
 from handlers.handlers_buttons import handle_user_choice
@@ -21,7 +22,6 @@ from handlers.handlers_image import handle_image
 from handlers.handlers_plan import handle_plan
 from handlers.handlers_pay import handle_pay
 from handlers.handlers_support import handle_support
-from handlers.utils import TELEGRAM_API_URL
 from handlers.handlers_transcribe import handle_transcribe_mode, handle_transcribe_input
 from handlers.handlers_voice import handle_voice_transcription
 from handlers.telegram_webhook_fix import (
@@ -296,19 +296,6 @@ def telegram_webhook():
                 send_message(chat_id, "❓ Не понял выбор. Напиши /menu или выбери кнопку ниже.")
                 return jsonify(success=True)
             
-
-def send_message(chat_id, text, buttons=None):
-    payload = {
-        'chat_id': chat_id,
-        'text': text
-    }
-    if buttons:
-        payload['reply_markup'] = {
-            'keyboard': [[{'text': btn} for btn in row] for row in buttons],
-            'resize_keyboard': True
-        }
-
-    requests.post(TELEGRAM_API_URL, json=payload)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, threaded=True)

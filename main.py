@@ -228,6 +228,7 @@ def telegram_webhook():
                 send_story_action_buttons(chat_id)
                 return jsonify(success=True)
 
+
             elif text == "🎬 REELS":
                 send_message(chat_id, "🎬 Готово! Отправь видео или ссылку — сделаю Reels по шаблону.")
                 user_states[chat_id] = {"mode": "capcut_generation"}
@@ -247,6 +248,7 @@ def telegram_webhook():
                 send_message(chat_id, "🌍 Отправь голосовое — переведу на 3 языка.")
                 user_states[chat_id] = {'mode': 'translate'}
                 return jsonify(success=True)
+
         
             elif text == "🖼 Фото":
                 send_message(chat_id, "🖼 Отправь описание или тему — сгенерирую изображение.")
@@ -301,6 +303,11 @@ def telegram_webhook():
                 from handlers.handlers_buttons import handle_user_choice
                 handle_user_choice(chat_id, text, video_path)
                 return jsonify(success=True)
+
+            else:
+                send_message(chat_id, "❓ Не понял выбор. Напиши /menu или выбери кнопку ниже.")
+                return jsonify(success=True)
+            
                 
             else:
                 send_message(chat_id, "✅ Бот получил сообщение!")

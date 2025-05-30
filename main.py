@@ -204,18 +204,17 @@ def telegram_webhook():
 
         if 'text' in message:
             text = message['text']
+            
+            if text == "📖 Stories":
+                from handlers.handlers_buttons import send_story_action_buttons
+                send_story_action_buttons(chat_id)
+                return jsonify(success=True)
 
 
             if text.strip() in ["1", "2", "3", "4", "1️⃣ Опубликовать", "2️⃣ Субтитры", "3️⃣ Вставки", "4️⃣ Всё сразу"]:
                 from handlers.handlers_buttons import handle_user_choice
                 handle_user_choice(chat_id, text.strip())
                 return
-
-
-            if text == "📖 Stories":
-                from handlers.handlers_buttons import send_story_action_buttons
-                send_story_action_buttons(chat_id)
-                return jsonify(success=True)
 
 
             elif text == "🎬 REELS":

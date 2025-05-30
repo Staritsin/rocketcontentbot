@@ -2,7 +2,7 @@ from flask import Flask, request, jsonify
 from flask import send_from_directory
 import requests
 import os
-from telegram import InlineKeyboardButton
+
 from handlers.handlers_buttons import handle_story_action_callback
 from handlers.handlers_buttons import handle_user_choice
 from handlers.handlers_rewrite import handle_callback_query

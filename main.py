@@ -308,11 +308,6 @@ def telegram_webhook():
                 send_message(chat_id, "❓ Не понял выбор. Напиши /menu или выбери кнопку ниже.")
                 return jsonify(success=True)
             
-                
-            else:
-                send_message(chat_id, "✅ Бот получил сообщение!")
-
-    return jsonify(success=True)
 
 def send_message(chat_id, text, buttons=None):
     payload = {

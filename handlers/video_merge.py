@@ -1,6 +1,7 @@
 import os
 import tempfile
 import subprocess
+import shutil
 from handlers.vad_utils import remove_silence
 
 def merge_videos(chat_id, video_paths, final_output_path):

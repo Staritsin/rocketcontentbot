@@ -81,10 +81,13 @@ def handle_stories_pipeline(chat_id, file_id):
             ["1️⃣ Опубликовать", "2️⃣ Субтитры", "3️⃣ Вставки"],
             ["4️⃣ Всё сразу"]
         ])
+
+        if chat_id not in user_states:
+            user_states[chat_id] = {}
+        user_states[chat_id]["last_video_path"] = cleaned_path  # 💾 Сохраняем путь
+
         send_video(chat_id, cleaned_path)
 
-
-        
         send_message(chat_id, "✅ Видео обработано и склеено. Что делаем дальше?", buttons=[
             ["📤 Опубликовать", "🎬 Наложить субтитры"]
         ])

@@ -33,8 +33,7 @@ def handle_stories_pipeline(chat_id, file_id):
     
     # Запускаем независимо от количества видео
     del user_states[chat_id]
-    process_stories_multiple(chat_id, video_ids)
-
+    
     
     mov_path = None
     mp4_path = None
@@ -85,6 +84,10 @@ def handle_stories_pipeline(chat_id, file_id):
             return
         
         merged_path = merge_videos(chat_id, cleaned_paths, os.path.join(OUTPUT_DIR, f"{file_id}_merged.mp4"))
+        if merged_path is None:
+            send_message(chat_id, "❌ Ошибка: merge_videos не вернул итоговое видео.")
+            return
+
         
         send_message(chat_id, "✅ Видео обработано и склеено. Что делаем дальше?", buttons=[
             ["📤 Опубликовать", "🎬 Наложить субтитры"]
@@ -142,20 +145,8 @@ def handle_stories_pipeline(chat_id, file_id):
             ], check=True)
             first_part = segment_output.replace("%03d", "000")
 
-
-        send_message(chat_id, "✂️ Нарезаю на куски по 40 сек...")
-        segment_output = os.path.join(OUTPUT_DIR, f"{uid}_part_%03d.mp4")
-        subprocess.run([
-            "ffmpeg", "-y", "-i", vertical_path,
-            "-c", "copy", "-map", "0",
-            "-segment_time", "40", "-f", "segment",
-            segment_output
-        ], check=True)
-
         send_message(chat_id, "📤 Отправляю готовое видео...")
 
-
-        first_part = segment_output.replace("%03d", "000")
         if os.path.exists(first_part):
             file_size_mb = os.path.getsize(first_part) / (1024 * 1024)
             print(f"📦 Размер файла: {file_size_mb:.2f} MB")

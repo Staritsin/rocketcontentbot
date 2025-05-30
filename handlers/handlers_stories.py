@@ -276,11 +276,17 @@ def process_stories_multiple(chat_id, video_ids):
 
         final_clip = concatenate_videoclips(clips)
         output_path = f"stories/final_{chat_id}.mp4"
-        final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
         
         if not os.path.exists(output_path):
             send_message(chat_id, f"❌ Итоговое видео не создано: {output_path}")
             return
+
+        try:
+            final_clip.write_videofile(output_path, codec="libx264", audio_codec="aac")
+        except Exception as e:
+            send_message(chat_id, f"❌ Ошибка при сохранении видео: {e}")
+            return
+
 
 
         # Отправляем пользователю

@@ -19,6 +19,10 @@ def handle_user_choice(chat_id, text, video_path):
 
 
 def send_story_action_buttons(chat_id):
+    from os import getenv
+    import requests
+    from telegram import InlineKeyboardButton
+
     keyboard = [
         [
             InlineKeyboardButton("🎬 Обработать", callback_data="story_process_one"),
@@ -28,18 +32,22 @@ def send_story_action_buttons(chat_id):
             InlineKeyboardButton("📤 Опубликовать готовое", callback_data="story_publish_ready")
         ]
     ]
+
     reply_markup = {
         "inline_keyboard": [[btn.to_dict() for btn in row] for row in keyboard]
     }
 
-    import requests
-    from os import getenv
     bot_token = getenv("BOT_TOKEN")
-    requests.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", json={
-        "chat_id": chat_id,
-        "text": "📚 Отлично! Выбери, что сделать с видео 👇",
-        "reply_markup": reply_markup
-    })
+
+    requests.post(
+        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+        json={
+            "chat_id": chat_id,
+            "text": "📚 Отлично! Выбери, что сделать с видео 👇\n\n"
+                    "Если кнопки не появились — нажми иконку клавиатуры ⌨️ рядом с полем ввода, чтобы раскрыть меню.",
+            "reply_markup": reply_markup
+        }
+    )
 
 
 def handle_story_action_callback(chat_id, query_data):

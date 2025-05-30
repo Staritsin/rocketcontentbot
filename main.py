@@ -297,7 +297,7 @@ def telegram_webhook():
                 send_message(chat_id, "❓ Не понял выбор. Напиши /menu или выбери кнопку ниже.")
                 return jsonify(success=True)
                 
-            return 'OK', 200  # <-- ЭТО ОБЯЗАТЕЛЬНО
+        return 'OK', 200  # <-- ЭТО ОБЯЗАТЕЛЬНО
 
             
 

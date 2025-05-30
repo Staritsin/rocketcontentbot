@@ -100,10 +100,12 @@ def handle_stories_pipeline(chat_id, file_id):
         denoised_path = os.path.join(UPLOAD_DIR, f"{uid}_denoised.mp4")
         subprocess.run([
             "ffmpeg", "-y", "-i", mp4_path,
-            "-af", "highpass=f=150, lowpass=f=3000, afftdn=nf=-25",  # фильтры шумов и частот
-            "-c:v", "copy",
+            "-af", "highpass=f=150, lowpass=f=3000, afftdn=nf=-25",
+            "-c:v", "libx264", "-preset", "fast",
+            "-c:a", "aac", "-b:a", "128k",
             denoised_path
         ], check=True)
+
 
         print(f"[DEBUG] denoised_path до remove_silence: {denoised_path}")
 

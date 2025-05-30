@@ -31,7 +31,7 @@ def send_story_action_buttons(chat_id):
     reply_markup = {
         "inline_keyboard": [[btn.to_dict() for btn in row] for row in keyboard]
     }
-    
+
     import requests
     from os import getenv
     bot_token = getenv("BOT_TOKEN")
@@ -43,14 +43,16 @@ def send_story_action_buttons(chat_id):
 
 
 def handle_story_action_callback(chat_id, query_data):
+    from handlers.state import user_states
+    from os import getenv
+    import requests
+
     if query_data == "story_process_one":
         send_message(chat_id, "🎬 Окей! Отправь видео для обработки.")
-        from handlers.state import user_states
         user_states[chat_id] = {"mode": "stories_processing"}
 
     elif query_data == "story_merge":
         send_message(chat_id, "🔗 Хорошо! Отправь 2 или больше видео подряд.")
-        from handlers.state import user_states
         user_states[chat_id] = {"mode": "stories_multiple"}
 
     elif query_data == "story_publish_ready":
@@ -63,16 +65,35 @@ def handle_story_action_callback(chat_id, query_data):
         reply_markup = {
             "inline_keyboard": [[btn.to_dict() for btn in row] for row in keyboard]
         }
-        from os import getenv
-        import requests
         bot_token = getenv("BOT_TOKEN")
         requests.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", json={
             "chat_id": chat_id,
             "text": "📤 Что ты хочешь опубликовать?",
             "reply_markup": reply_markup
         })
-        from handlers.state import user_states
         user_states[chat_id] = {"mode": "publish_ready"}
+
+    elif query_data == "publish_photo":
+        send_message(chat_id, "📸 Отправь фото (одно или несколько). После этого появится кнопка для публикации.")
+        user_states[chat_id] = {"mode": "photo_upload"}
+
+    elif query_data == "publish_video":
+        keyboard = [
+            [
+                InlineKeyboardButton("🔤 Наложить субтитры", callback_data="add_subtitles"),
+                InlineKeyboardButton("📤 Опубликовать", callback_data="publish_video_final")
+            ]
+        ]
+        reply_markup = {
+            "inline_keyboard": [[btn.to_dict() for btn in row] for row in keyboard]
+        }
+        bot_token = getenv("BOT_TOKEN")
+        requests.post(f"https://api.telegram.org/bot{bot_token}/sendMessage", json={
+            "chat_id": chat_id,
+            "text": "🎥 Что сделать с видео?",
+            "reply_markup": reply_markup
+        })
+        user_states[chat_id] = {"mode": "video_publish_options"}
 
     else:
         send_message(chat_id, "❓ Не понял выбор.")

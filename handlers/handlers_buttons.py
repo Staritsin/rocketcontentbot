@@ -1,4 +1,4 @@
-from handlers.rewrite_utils import publish_video, generate_subtitles, insert_clips
+from handlers.handlers_rewrite import publish_video, generate_subtitles, insert_clips
 from handlers.utils import send_message
 
 def handle_user_choice(chat_id, text, video_path):

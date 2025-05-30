@@ -42,5 +42,18 @@ def merge_videos(chat_id, video_paths, final_output_path):
         return None
 
     # 🧼 Удаляем тишину уже после склейки
-    cleaned_path = remove_silence(chat_id, merged_temp_path, final_output_path)
-    return cleaned_path
+        cleaned_path = remove_silence(chat_id, merged_temp_path, final_output_path)
+        
+        if not os.path.exists(final_output_path):
+            print(f"[ERROR] merge_videos: файл не создан: {final_output_path}")
+            return None
+        
+        return final_output_path
+
+    
+   
+
+
+
+        
+

@@ -68,17 +68,6 @@ def telegram_webhook():
         if handle_callback_rating(query_data, chat_id):
             return jsonify(success=True)
 
-        if query_data == 'video':
-            keyboard = [
-                [InlineKeyboardButton("\U0001F4F1 Собрать сторис", callback_data='make_stories')],
-                [InlineKeyboardButton("\U0001F39E Собрать рилс", callback_data='make_reels')]
-            ]
-            reply_markup = {'inline_keyboard': [[btn.to_dict()] for btn in keyboard]}
-            requests.post(TELEGRAM_API_URL, json={
-                'chat_id': chat_id,
-                'text': 'Что будем собирать из видео? \ud83d\udc47',
-                'reply_markup': reply_markup
-            })
 
         elif query_data == 'make_stories':
             keyboard = [

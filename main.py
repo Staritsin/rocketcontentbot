@@ -183,12 +183,10 @@ def telegram_webhook():
                     process_stories_multiple(chat_id, user_states[chat_id]["video_files"])
                     user_states[chat_id] = {}  # Сброс состояния после обработки
                 else:
-                    from handlers.utils import send_message
                     send_message(chat_id, f"📹 Получено {count} видео. Отправь ещё минимум одно.")
                 return jsonify(success=True)
         
             elif mode == "publish_ready":
-                from handlers.utils import send_message
                 send_message(chat_id, "📤 Принято! Видео будет опубликовано (заглушка).")
                 return jsonify(success=True)
 

@@ -296,11 +296,13 @@ def telegram_webhook():
             else:
                 send_message(chat_id, "❓ Не понял выбор. Напиши /menu или выбери кнопку ниже.")
                 return jsonify(success=True)
+                
+            return 'OK', 200  # <-- ЭТО ОБЯЗАТЕЛЬНО
+
             
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=10000, threaded=True)
 
-@app.route("/videos/<path:filename>")
-def serve_video(filename):
-    return send_from_directory("videos", filename)
+
+

@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 from flask import send_from_directory
 import requests
 import os
+from telegram import InlineKeyboardButton
 from handlers.utils import send_message
 from handlers.utils import TELEGRAM_API_URL
 from handlers.handlers_buttons import send_story_action_buttons
@@ -34,7 +35,7 @@ from handlers.telegram_webhook_fix import (
 
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
-TELEGRAM_API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}/sendMessage'
+
 user_states = {}
 
 @app.route('/')

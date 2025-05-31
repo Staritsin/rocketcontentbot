@@ -23,15 +23,38 @@ OUTPUT_DIR = "stories"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+def normalize_to_mp4(chat_id, input_path):
+    ext = os.path.splitext(input_path)[1].lower()
+    if ext in [".mp4", ".m4v"]:
+        return input_path
+
+    normalized_path = input_path.replace(ext, "_normalized.mp4")
+    send_message(chat_id, f"🧰 Конвертирую {ext} → mp4...")
+
+    result = subprocess.run([
+        "ffmpeg", "-y", "-i", input_path,
+        "-vf", "fps=30,scale=720:1280",
+        "-c:v", "libx264", "-preset", "ultrafast", "-crf", "23",
+        "-c:a", "aac", "-b:a", "128k",
+        normalized_path
+    ], capture_output=True, text=True)
+
+    if result.returncode != 0 or not os.path.exists(normalized_path):
+        send_message(chat_id, "❌ Ошибка при конвертации в mp4.")
+        return None
+
+    return normalized_path
+
+
 
 def handle_single_video_processing(chat_id, input_path):
-    output_path = input_path.replace(".mp4", "_cleaned.mp4")
+    input_path = normalize_to_mp4(chat_id, input_path)
+    if not input_path:
+        return
     
-    print(f"[DEBUG] Запускаю remove_silence: {input_path} → {output_path}")  # ← вставь
-
+    output_path = input_path.replace(".mp4", "_cleaned.mp4")
     cleaned_path = remove_silence(chat_id, input_path, output_path)
 
-    print(f"[DEBUG] remove_silence вернул: {cleaned_path}")  # ← вставь
 
     if cleaned_path:
         send_video(chat_id, cleaned_path)

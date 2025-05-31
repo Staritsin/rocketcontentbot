@@ -55,9 +55,10 @@ def remove_silence(chat_id, input_path, output_path):
 
             
         # 👇 Команда
+        
             command = [
                 "auto-editor",
-                normalized_path,
+                input_path,  # теперь всегда актуальный путь
                 "--edit", "audio:threshold=2%",
                 "--frame_margin", "2",
                 "--video_speed", "1",
@@ -67,8 +68,12 @@ def remove_silence(chat_id, input_path, output_path):
                 "--audio_codec", "aac",
                 "--no-open"
             ]
-
-
+            
+            # 🔍 DEBUG перед запуском
+            print(f"[DEBUG] Auto-editor input: {input_path}")
+            print(f"[DEBUG] Auto-editor output: {output_path}")
+            print(f"[DEBUG] Auto-editor CMD: {' '.join(command)}")
+            
             print(f"[2] Команда auto-editor:\n{' '.join(command)}")
         
         except Exception as e:

@@ -60,5 +60,8 @@ def download_telegram_file(file_id, local_path):
     ).json()["result"]["file_path"]
     file_url = f"{TELEGRAM_FILE_API}{file_path}"
 
+    print(f"[DEBUG] Скачиваю файл из Telegram: {file_url} → {local_path}")  # ← ВОТ ЭТА СТРОКА
+
     with open(local_path, "wb") as f:
         f.write(requests.get(file_url).content)
+

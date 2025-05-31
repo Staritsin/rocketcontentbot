@@ -23,6 +23,23 @@ OUTPUT_DIR = "stories"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
+
+# 🔽 ВСТАВИТЬ ЭТО ПОСЛЕ ИМПОРТОВ
+def process_auto_editor(input_path: str, output_path: str) -> bool:
+    try:
+        subprocess.run([
+            "auto-editor", input_path,
+            "-o", output_path,
+            "--video-speed", "1.0",
+            "--frame-rate", "30",
+            "--silent-threshold", "0.03",
+        ], check=True)
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"[auto-editor] ❌ Ошибка: {e}")
+        return False
+
+
 def handle_stories_pipeline(chat_id, file_id):
     # Проверяем, если уже идёт обработка — не запускаем повторно
     if user_states.get(chat_id, {}).get("processing"):
@@ -69,10 +86,11 @@ def handle_stories_pipeline(chat_id, file_id):
             return
         
         send_message(chat_id, "🧹 Удаляю тишину после склейки...")
-        cleaned_path = remove_silence(chat_id, merged_temp_path, merged_path)
+        cleaned_path = os.path.join(OUTPUT_DIR, f"{file_id}_autoedit.mp4")
+        success = process_auto_editor(merged_temp_path, cleaned_path)
         
-        if not cleaned_path or not os.path.exists(cleaned_path):
-            send_message(chat_id, "❌ Ошибка при удалении тишины после склейки.")
+        if not success or not os.path.exists(cleaned_path):
+            send_message(chat_id, "❌ Ошибка auto-editor. Видео не обработано.")
             user_states[chat_id] = {}
             return
 

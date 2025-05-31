@@ -24,6 +24,17 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
+def handle_single_video_processing(chat_id, input_path):
+    output_path = input_path.replace(".mp4", "_cleaned.mp4")
+    cleaned_path = remove_silence(chat_id, input_path, output_path)
+    
+    if cleaned_path:
+        send_video(chat_id, cleaned_path)
+    else:
+        send_message(chat_id, "❌ Ошибка при обработке видео.")
+
+
+
 # 🔽 ВСТАВИТЬ ЭТО ПОСЛЕ ИМПОРТОВ
 def process_auto_editor(input_path: str, output_path: str) -> bool:
     try:

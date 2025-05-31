@@ -188,24 +188,6 @@ def telegram_webhook():
                 return jsonify(success=True)
 
         
-            if mode == "stories_processing":
-                from handlers.handlers_stories import handle_stories_pipeline
-                handle_stories_pipeline(chat_id, file_id)
-                return jsonify(success=True)
-        
-            elif mode == "stories_multiple":
-                # Накопление видео в списке
-                user_states.setdefault(chat_id, {}).setdefault("video_files", []).append(file_id)
-                count = len(user_states[chat_id]["video_files"])
-        
-                if count >= 2:
-                    from handlers.handlers_stories import process_stories_multiple
-                    process_stories_multiple(chat_id, user_states[chat_id]["video_files"])
-                    user_states[chat_id] = {}  # Сброс состояния после обработки
-                else:
-                    send_message(chat_id, f"📹 Получено {count} видео. Отправь ещё минимум одно.")
-                return jsonify(success=True)
-        
             elif mode == "publish_ready":
                 send_message(chat_id, "📤 Принято! Видео будет опубликовано (заглушка).")
                 return jsonify(success=True)

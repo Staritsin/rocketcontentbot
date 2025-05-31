@@ -2,6 +2,12 @@ from flask import Flask, request, jsonify
 from flask import send_from_directory
 import requests
 import os
+
+import uuid
+from handlers.utils import download_telegram_file
+from handlers.handlers_stories import handle_single_video_processing
+
+
 from telegram import InlineKeyboardButton
 from handlers.utils import send_message
 from handlers.utils import TELEGRAM_API_URL
@@ -172,8 +178,14 @@ def telegram_webhook():
 
 
             if mode == "stories_processing":
-                handle_stories_pipeline(chat_id, file_id)
+                uid = str(uuid.uuid4())
+                temp_path = f"uploads/{uid}.mp4"
+                download_telegram_file(file_id, temp_path)
+            
+                user_states[chat_id]["last_video_path"] = temp_path
+                handle_single_video_processing(chat_id, temp_path)
                 return jsonify(success=True)
+
             
             elif mode == "stories_multiple":
                 from handlers.handlers_stories import process_stories_multiple

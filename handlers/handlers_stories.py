@@ -26,8 +26,13 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 def handle_single_video_processing(chat_id, input_path):
     output_path = input_path.replace(".mp4", "_cleaned.mp4")
-    cleaned_path = remove_silence(chat_id, input_path, output_path)
     
+    print(f"[DEBUG] Запускаю remove_silence: {input_path} → {output_path}")  # ← вставь
+
+    cleaned_path = remove_silence(chat_id, input_path, output_path)
+
+    print(f"[DEBUG] remove_silence вернул: {cleaned_path}")  # ← вставь
+
     if cleaned_path:
         send_video(chat_id, cleaned_path)
     else:

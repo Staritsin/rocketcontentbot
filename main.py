@@ -5,6 +5,7 @@ import os
 from telegram import InlineKeyboardButton
 from handlers.utils import send_message
 from handlers.utils import TELEGRAM_API_URL
+from handlers.handlers_stories import handle_stories_pipeline, process_stories_multiple
 from handlers.handlers_buttons import send_story_action_buttons
 from handlers.handlers_buttons import handle_story_action_callback
 from handlers.handlers_buttons import handle_user_choice
@@ -169,8 +170,8 @@ def telegram_webhook():
             file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
             mode = user_states.get(chat_id, {}).get("mode")
 
+
             if mode == "stories_processing":
-                from handlers.handlers_stories import handle_stories_pipeline
                 handle_stories_pipeline(chat_id, file_id)
                 return jsonify(success=True)
             

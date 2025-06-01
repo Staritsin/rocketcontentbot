@@ -7,3 +7,5 @@ werkzeug==2.0.3
 auto-editor==27.1.1
 openai
 moviepy==1.0.3
+torchaudio
+torch

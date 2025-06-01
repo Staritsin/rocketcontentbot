@@ -177,11 +177,12 @@ def telegram_webhook():
         if 'video' in message or 'document' in message:
             file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
             mode = user_states.get(chat_id, {}).get("mode")
-
+            print(f"🎯 Получено видео file_id: {file_id}, режим: {mode}", flush=True)
 
             if mode == "single_processing":
                 uid = str(uuid.uuid4())
                 temp_path = f"uploads/{uid}.mp4"
+                print(f"📥 Начинаю скачивание по file_id: {file_id} → {temp_path}", flush=True)
                 download_telegram_file(file_id, temp_path)
                 print(f"📥 single_processing: скачал файл в {temp_path}", flush=True)
                 user_states[chat_id]["last_video_path"] = temp_path

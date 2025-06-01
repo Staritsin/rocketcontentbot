@@ -1,8 +1,11 @@
 import os
 import requests
+from os import getenv
 from telegram import InlineKeyboardButton
 from handlers.state import user_states
 from handlers.telegram_webhook_fix import ask_for_rating
+
+
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
@@ -84,19 +87,30 @@ def handle_rewrite_transcript(chat_id):
 
 def send_video_action_buttons(chat_id):
     keyboard = [
-        [InlineKeyboardButton("🚀 Опубликовать", callback_data='publish')],
-        [InlineKeyboardButton("🧱 Наложить вставки", callback_data='add_inserts')],
-        [InlineKeyboardButton("🧾 Наложить субтитры", callback_data='add_subtitles')]
+        [
+            InlineKeyboardButton("📤 Опубликовать", callback_data="publish"),
+            InlineKeyboardButton("🔤 Наложить субтитры", callback_data="add_subtitles")
+        ],
+        [
+            InlineKeyboardButton("🎬 Вставки", callback_data="add_inserts"),
+            InlineKeyboardButton("✅ Всё сразу", callback_data="publish_all")
+        ]
     ]
+
     reply_markup = {
-        'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]
+        "inline_keyboard": [[btn.to_dict() for btn in row] for row in keyboard]
     }
 
-    requests.post(TELEGRAM_API_URL, json={
-        'chat_id': chat_id,
-        'text': "✅ Видео готово! Что дальше? 👇",
-        'reply_markup': reply_markup
-    })
+    bot_token = getenv("BOT_TOKEN")
+    requests.post(
+        f"https://api.telegram.org/bot{bot_token}/sendMessage",
+        json={
+            "chat_id": chat_id,
+            "text": "🎯 Что сделать с видео?",
+            "reply_markup": reply_markup
+        }
+    )
+
 
 def handle_callback_query(callback):
     chat_id = callback['message']['chat']['id']

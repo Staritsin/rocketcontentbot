@@ -6,6 +6,9 @@ import uuid
 import requests
 import subprocess
 import ffmpeg  # добавлен
+from handlers.handlers_publish import publish_reels
+from handlers.state import user_states
+from handlers.handlers_rewrite import send_video_action_buttons  # 👈 добавь сюда
 from handlers.utils import send_message, download_telegram_file, send_video
 from handlers.handlers_rewrite import handle_rewrite_transcript as handle_rewrite_text
 from handlers.handlers_gpt_keywords import extract_keywords_from_text
@@ -64,7 +67,6 @@ def handle_single_video_processing(chat_id, input_path):
         send_video(chat_id, cleaned_path)
     
         # 🔽 ВСТАВЬ ВОТ ЭТИ 2 СТРОКИ ПОД send_video
-        from handlers.handlers_rewrite import send_video_action_buttons
         send_video_action_buttons(chat_id)
     
     else:

@@ -1,6 +1,9 @@
 from telegram import InlineKeyboardButton
 from handlers.rewrite_utils import publish_video, generate_subtitles, insert_clips
 from handlers.utils import send_message
+from os import getenv
+import requests
+from handlers.state import user_states
 
 
 def handle_user_choice(chat_id, text, video_path):
@@ -19,10 +22,6 @@ def handle_user_choice(chat_id, text, video_path):
 
 
 def send_story_action_buttons(chat_id):
-    from os import getenv
-    import requests
-    from telegram import InlineKeyboardButton
-
     keyboard = [
         [
             InlineKeyboardButton("🎬 Обработать", callback_data="story_process_one"),
@@ -51,9 +50,6 @@ def send_story_action_buttons(chat_id):
 
 
 def handle_story_action_callback(chat_id, query_data):
-    from handlers.state import user_states
-    from os import getenv
-    import requests
 
     if query_data == "story_process_one":
         print(f"✅ Кнопка '🎬 Обработать' нажата. query_data: {query_data}", flush=True)

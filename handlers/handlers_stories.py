@@ -62,10 +62,13 @@ def handle_single_video_processing(chat_id, input_path):
 
     if cleaned_path:
         send_video(chat_id, cleaned_path)
+    
+        # 🔽 ВСТАВЬ ВОТ ЭТИ 2 СТРОКИ ПОД send_video
+        from handlers.handlers_rewrite import send_video_action_buttons
+        send_video_action_buttons(chat_id)
+    
     else:
         send_message(chat_id, "❌ Ошибка при обработке видео.")
-
-
 
 
 # 🔽 ВСТАВИТЬ ЭТО ПОСЛЕ ИМПОРТОВ

@@ -62,6 +62,13 @@ def telegram_webhook():
 
         print(f"📩 Поймал callback_query: {query_data}", flush=True)
 
+        if query_data == "story_process_one":
+            user_states[chat_id] = {"mode": "single_processing"}
+            print(f"✅ Установлен режим single_processing для chat_id={chat_id}", flush=True)
+            send_message(chat_id, "🎬 Отлично! Пришли видео, и я его обработаю.")
+            return jsonify(success=True)
+
+
         if query_data.startswith("story_") or query_data in ["publish_photo", "publish_video"]:
             handle_story_action_callback(chat_id, query_data)
             return jsonify(success=True)
@@ -175,6 +182,8 @@ def telegram_webhook():
             return jsonify(success=True)
 
         if 'video' in message or 'document' in message:
+            print(f"🧪 [DEBUG] user_states весь: {user_states}", flush=True)
+
             file_id = message['video']['file_id'] if 'video' in message else message['document']['file_id']
             mode = user_states.get(chat_id, {}).get("mode")
             print(f"🎯 Получено видео file_id: {file_id}, режим: {mode}", flush=True)

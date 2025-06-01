@@ -56,6 +56,7 @@ def handle_story_action_callback(chat_id, query_data):
     import requests
 
     if query_data == "story_process_one":
+        print(f"✅ Кнопка '🎬 Обработать' нажата. query_data: {query_data}", flush=True)
         send_message(chat_id, "🎬 Окей! Отправь видео для обработки.")
         user_states[chat_id] = {"mode": "stories_processing"}
 

@@ -3,6 +3,11 @@ import os
 import ffmpeg
 from handlers.utils import send_message
 
+import torchaudio
+import torch
+from silero_vad import VoiceActivityDetector  # это твоя кастомная версия
+import librosa
+
 
 
 def remove_silence(chat_id, input_path, output_path):
@@ -137,3 +142,56 @@ def remove_silence(chat_id, input_path, output_path):
         send_message(chat_id, f"❌ Общая ошибка: {str(e)}")
         print(f"[ОШИБКА] remove_silence(): {str(e)}")
         return None
+
+def remove_silence_vad(chat_id, input_path, output_path):
+    try:
+        send_message(chat_id, "🧠 Запускаю точную вырезку по голосу (Silero VAD)...")
+        print(f"[VAD] Начинаю анализ: {input_path}")
+
+        # Загрузка аудио (конвертируем в WAV с 16kHz)
+        wav_path = input_path.replace(".mp4", "_audio.wav")
+        subprocess.run([
+            "ffmpeg", "-y", "-i", input_path, "-ar", "16000", "-ac", "1", "-f", "wav", wav_path
+        ], capture_output=True)
+
+        # Загружаем WAV
+        audio, sr = librosa.load(wav_path, sr=16000)
+
+        # Загружаем модель
+        model = VoiceActivityDetector("silero_vad.jit")
+        speech_timestamps = model.get_speech_timestamps(audio)
+
+        if not speech_timestamps:
+            send_message(chat_id, "⚠️ Голос не обнаружен. Видео не обработано.")
+            return None
+
+        # Создаём список таймкодов в секундах
+        segments = []
+        for ts in speech_timestamps:
+            start = ts['start'] / sr
+            end = ts['end'] / sr
+            segments.append(f"between(t,{start:.2f},{end:.2f})")
+
+        vf_expr = "+".join(segments)
+
+        # Вырезаем по голосу
+        subprocess.run([
+            "ffmpeg", "-y", "-i", input_path,
+            "-vf", f"select='{vf_expr}',setpts=N/FRAME_RATE/TB",
+            "-af", f"aselect='{vf_expr}',asetpts=N/SR/TB",
+            "-c:v", "libx264", "-c:a", "aac",
+            output_path
+        ], capture_output=True)
+
+        if not os.path.exists(output_path):
+            send_message(chat_id, "❌ Не удалось сохранить файл после VAD-обработки.")
+            return None
+
+        send_message(chat_id, "✅ Вырезка по голосу завершена. Видео готово.")
+        return output_path
+
+    except Exception as e:
+        send_message(chat_id, f"❌ VAD ошибка: {str(e)}")
+        print(f"[VAD-ERROR]: {e}")
+        return None
+

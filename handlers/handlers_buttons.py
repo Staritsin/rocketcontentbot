@@ -54,7 +54,7 @@ def handle_story_action_callback(chat_id, query_data):
     if query_data == "story_process_one":
         print(f"✅ Кнопка '🎬 Обработать' нажата. query_data: {query_data}", flush=True)
         send_message(chat_id, "🎬 Окей! Отправь видео для обработки.")
-        user_states[chat_id] = {"mode": "stories_processing"}
+        user_states[chat_id] = {"mode": "single_processing"}  # ✅ стало
 
     elif query_data == "story_merge":
         send_message(chat_id, "🔗 Хорошо! Отправь 2 или больше видео подряд.")

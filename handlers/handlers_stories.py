@@ -46,20 +46,20 @@ def normalize_to_mp4(chat_id, input_path):
     return normalized_path
 
 
-
 def handle_single_video_processing(chat_id, input_path):
+    print(f"👣 Старт обработки одиночного видео: {input_path}", flush=True)
     input_path = normalize_to_mp4(chat_id, input_path)
-    if not input_path:
-        return
-    
+    print(f"📼 Видео после normalize: {input_path}", flush=True)
+
     output_path = input_path.replace(".mp4", "_cleaned.mp4")
     cleaned_path = remove_silence(chat_id, input_path, output_path)
-
+    print(f"🎬 Видео после remove_silence: {cleaned_path}", flush=True)
 
     if cleaned_path:
         send_video(chat_id, cleaned_path)
     else:
         send_message(chat_id, "❌ Ошибка при обработке видео.")
+
 
 
 

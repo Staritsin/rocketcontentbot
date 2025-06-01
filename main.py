@@ -179,14 +179,15 @@ def telegram_webhook():
             mode = user_states.get(chat_id, {}).get("mode")
 
 
-            if mode == "stories_processing":
+            if mode == "single_processing":
                 uid = str(uuid.uuid4())
                 temp_path = f"uploads/{uid}.mp4"
                 download_telegram_file(file_id, temp_path)
-            
+                print(f"📥 single_processing: скачал файл в {temp_path}", flush=True)
                 user_states[chat_id]["last_video_path"] = temp_path
                 handle_single_video_processing(chat_id, temp_path)
                 return jsonify(success=True)
+
 
             
             elif mode == "stories_multiple":
@@ -204,17 +205,6 @@ def telegram_webhook():
         
             elif mode == "publish_ready":
                 send_message(chat_id, "📤 Принято! Видео будет опубликовано (заглушка).")
-                return jsonify(success=True)
-
-
-            mode = user_states.get(chat_id, {}).get("mode")
-
-            if mode == "single_processing":
-                uid = str(uuid.uuid4())
-                temp_path = f"uploads/{uid}.mp4"
-                download_telegram_file(file_id, temp_path)
-                user_states[chat_id]["last_video_path"] = temp_path
-                handle_single_video_processing(chat_id, temp_path)
                 return jsonify(success=True)
             
             elif mode == "stories_processing":

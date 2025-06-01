@@ -17,8 +17,10 @@ from handlers.handlers_capcut_api import create_reels_from_template
 from handlers.handlers_subtitles import generate_subtitles
 from handlers.handlers_publish import publish_reels
 from handlers.state import user_states
-from handlers.vad_utils import remove_silence
 from handlers.video_merge import merge_videos  # 👈 вставь это
+from handlers.vad_utils import remove_silence, remove_silence_vad
+
+
 
 
 UPLOAD_DIR = "uploads"
@@ -60,8 +62,15 @@ def handle_single_video_processing(chat_id, input_path):
     
     output_path = input_path.replace(".mp4", "_cleaned.mp4")
 
-    cleaned_path = remove_silence(chat_id, input_path, output_path)
-    print(f"🎬 Видео после remove_silence: {cleaned_path}", flush=True)
+    mode = user_states.get(chat_id, {}).get("vad_mode", "auto")
+
+    if mode == "vad":
+        cleaned_path = remove_silence_vad(chat_id, input_path, output_path)
+    else:
+        cleaned_path = remove_silence(chat_id, input_path, output_path)
+    
+    print(f"🎞 Видео после remove_silence: {cleaned_path}", flush=True)
+
 
     if cleaned_path:
         send_video(chat_id, cleaned_path)

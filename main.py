@@ -59,7 +59,9 @@ def telegram_webhook():
         callback = data['callback_query']
         chat_id = callback['message']['chat']['id']
         query_data = callback['data']
-                
+
+        print(f"📩 Поймал callback_query: {query_data}", flush=True)
+
         if query_data.startswith("story_") or query_data in ["publish_photo", "publish_video"]:
             handle_story_action_callback(chat_id, query_data)
             return jsonify(success=True)

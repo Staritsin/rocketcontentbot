@@ -207,9 +207,22 @@ def telegram_webhook():
                 return jsonify(success=True)
 
 
-            if user_states.get(chat_id, {}).get("mode") == "stories_processing":
+            mode = user_states.get(chat_id, {}).get("mode")
+
+            if mode == "single_processing":
+                uid = str(uuid.uuid4())
+                temp_path = f"uploads/{uid}.mp4"
+                download_telegram_file(file_id, temp_path)
+                user_states[chat_id]["last_video_path"] = temp_path
+                handle_single_video_processing(chat_id, temp_path)
+                return jsonify(success=True)
+            
+            elif mode == "stories_processing":
                 handle_stories_pipeline(chat_id, file_id)
                 return jsonify(success=True)
+            )
+
+            
             if user_states.get(chat_id, {}).get("mode") == "capcut_generation":
                 from handlers.handlers_runway import process_capcut_pipeline
                 process_capcut_pipeline(chat_id, file_id)

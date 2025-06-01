@@ -220,7 +220,6 @@ def telegram_webhook():
             elif mode == "stories_processing":
                 handle_stories_pipeline(chat_id, file_id)
                 return jsonify(success=True)
-            )
 
             
             if user_states.get(chat_id, {}).get("mode") == "capcut_generation":

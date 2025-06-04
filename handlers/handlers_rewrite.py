@@ -94,6 +94,9 @@ def send_video_action_buttons(chat_id):
         [
             InlineKeyboardButton("🎬 Вставки", callback_data="add_inserts"),
             InlineKeyboardButton("✅ Всё сразу", callback_data="publish_all")
+        ],
+        [
+            InlineKeyboardButton("⚙️ Настройки", callback_data="open_settings")
         ]
     ]
 

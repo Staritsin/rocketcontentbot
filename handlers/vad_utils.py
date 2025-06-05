@@ -10,7 +10,7 @@ model, utils = torch.hub.load(
     model='silero_vad',
     force_reload=True  # Поставь False после первого раза
 )
-(get_speech_timestamps, _, _, _, read_audio, _, _) = utils
+(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
 
 
 

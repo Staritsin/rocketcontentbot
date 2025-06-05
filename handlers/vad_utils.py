@@ -10,8 +10,8 @@ import torch
 model, utils = torch.hub.load(
     repo_or_dir='snakers4/silero-vad',
     model='silero_vad',
-    force_reload=False,   # ❗️НЕ перезагружай при каждом запуске
-    trust_repo=True       # ✅ доверяем репозиторию, чтобы избежать future warnings
+    force_reload=False,
+    trust_repo=True
 )
 
 # Достаём нужные функции из utils

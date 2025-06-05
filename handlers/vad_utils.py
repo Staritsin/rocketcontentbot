@@ -6,19 +6,29 @@ from handlers.utils import send_message
 import torchaudio
 import torch
 
-model, utils = torch.hub.load(
+# Загружаем саму модель Silero (JIT-модель)
+model = torch.hub.load(
     repo_or_dir='snakers4/silero-vad',
     model='silero_vad',
     force_reload=False,
     trust_repo=True
 )
 
-# Получаем функции из utils
+# Загружаем утилиты (отдельно)
+utils = torch.hub.load(
+    repo_or_dir='snakers4/silero-vad',
+    model='utils',
+    force_reload=False,
+    trust_repo=True
+)
+
+# Достаём функции из utils
 get_speech_timestamps = utils.get_speech_timestamps
 save_audio = utils.save_audio
 read_audio = utils.read_audio
 VADIterator = utils.VADIterator
 collect_chunks = utils.collect_chunks
+
 import librosa
 
 def remove_silence(chat_id, input_path, output_path):

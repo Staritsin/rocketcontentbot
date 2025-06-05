@@ -3,10 +3,10 @@ import os
 import ffmpeg
 from handlers.utils import send_message
 
-import torchaudio
 import torch
+import torchaudio
 
-# Загружаем саму модель Silero (JIT-модель)
+# ✅ Загружаем модель отдельно
 model = torch.hub.load(
     repo_or_dir='snakers4/silero-vad',
     model='silero_vad',
@@ -14,7 +14,7 @@ model = torch.hub.load(
     trust_repo=True
 )
 
-# Загружаем утилиты (отдельно)
+# ✅ Загружаем утилиты отдельно
 utils = torch.hub.load(
     repo_or_dir='snakers4/silero-vad',
     model='utils',
@@ -22,12 +22,13 @@ utils = torch.hub.load(
     trust_repo=True
 )
 
-# Достаём функции из utils
+# ✅ Распаковываем как методы объекта
 get_speech_timestamps = utils.get_speech_timestamps
 save_audio = utils.save_audio
 read_audio = utils.read_audio
 VADIterator = utils.VADIterator
 collect_chunks = utils.collect_chunks
+
 
 import librosa
 

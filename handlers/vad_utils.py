@@ -5,7 +5,7 @@ from handlers.utils import send_message
 
 import torchaudio
 import torch
-from silero_vad import VoiceActivityDetector  # это твоя кастомная версия
+from handlers.silero_vad import VoiceActivityDetector
 import librosa
 
 

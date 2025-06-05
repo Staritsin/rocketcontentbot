@@ -5,7 +5,14 @@ from handlers.utils import send_message
 
 import torchaudio
 import torch
-from handlers.silero_vad import VoiceActivityDetector
+model, utils = torch.hub.load(
+    repo_or_dir='snakers4/silero-vad',
+    model='silero_vad',
+    force_reload=True  # Поставь False после первого раза
+)
+(get_speech_timestamps, _, _, _, read_audio, _, _) = utils
+
+
 import librosa
 
 
@@ -157,9 +164,9 @@ def remove_silence_vad(chat_id, input_path, output_path):
         # Загружаем WAV
         audio, sr = librosa.load(wav_path, sr=16000)
 
-        # Загружаем модель
-        model = VoiceActivityDetector("silero_vad.jit")
-        speech_timestamps = model.get_speech_timestamps(audio)
+        # Получаем таймкоды речи через Silero VAD
+        speech_timestamps = get_speech_timestamps(audio, model, sampling_rate=16000)
+
 
         if not speech_timestamps:
             send_message(chat_id, "⚠️ Голос не обнаружен. Видео не обработано.")

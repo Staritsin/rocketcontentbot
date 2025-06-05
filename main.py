@@ -165,6 +165,31 @@ def telegram_webhook():
             handle_rewrite_transcript(chat_id)
         elif query_data == 'success':
             send_message(chat_id, "🌟 Рад, что всё получилось!")
+            
+        elif query_data == "open_settings":
+            keyboard = [
+                [InlineKeyboardButton("🎯 Auto-editor (по громкости)", callback_data="set_mode_auto")],
+                [InlineKeyboardButton("🎙 Silero VAD (по голосу)", callback_data="set_mode_vad")]
+            ]
+            reply_markup = {
+                'inline_keyboard': [[btn.to_dict() for btn in row] for row in keyboard]
+            }
+        
+            requests.post(TELEGRAM_API_URL, json={
+                'chat_id': chat_id,
+                'text': 'Выбери способ вырезки тишины:',
+                'reply_markup': reply_markup
+            })
+
+        elif query_data == "set_mode_auto":
+            user_states.setdefault(chat_id, {})["vad_mode"] = "auto"
+            send_message(chat_id, "✅ Установлен режим: auto-editor (по громкости)")
+        
+        elif query_data == "set_mode_vad":
+            user_states.setdefault(chat_id, {})["vad_mode"] = "vad"
+            send_message(chat_id, "✅ Установлен режим: Silero VAD (по голосу)")
+
+        
         elif query_data == 'menu':
             send_message(chat_id, "🔙 Возвращаю в меню. Напиши /menu")
         elif query_data == 'download_transcript':

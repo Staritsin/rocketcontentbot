@@ -8,9 +8,15 @@ import torch
 model, utils = torch.hub.load(
     repo_or_dir='snakers4/silero-vad',
     model='silero_vad',
-    force_reload=True  # Поставь False после первого раза
+    force_reload=True
 )
-(get_speech_timestamps, save_audio, read_audio, VADIterator, collect_chunks) = utils
+
+get_speech_timestamps = utils.get_speech_timestamps
+save_audio = utils.save_audio
+read_audio = utils.read_audio
+VADIterator = utils.VADIterator
+collect_chunks = utils.collect_chunks
+
 
 
 

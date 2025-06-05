@@ -5,17 +5,22 @@ from handlers.utils import send_message
 
 import torchaudio
 import torch
+
+# Загрузка модели Silero VAD и util-функций из GitHub
 model, utils = torch.hub.load(
     repo_or_dir='snakers4/silero-vad',
     model='silero_vad',
-    force_reload=True
+    force_reload=False,   # ❗️НЕ перезагружай при каждом запуске
+    trust_repo=True       # ✅ доверяем репозиторию, чтобы избежать future warnings
 )
 
+# Достаём нужные функции из utils
 get_speech_timestamps = utils.get_speech_timestamps
 save_audio = utils.save_audio
 read_audio = utils.read_audio
 VADIterator = utils.VADIterator
 collect_chunks = utils.collect_chunks
+
 
 
 

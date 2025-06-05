@@ -6,28 +6,21 @@ from handlers.utils import send_message
 import torch
 import torchaudio
 
-# ✅ Загружаем модель отдельно
-model = torch.hub.load(
+# Загружаем model и utils в одной строке (официальный способ от Silero)
+model, utils = torch.hub.load(
     repo_or_dir='snakers4/silero-vad',
     model='silero_vad',
     force_reload=False,
     trust_repo=True
 )
 
-# ✅ Загружаем утилиты отдельно
-utils = torch.hub.load(
-    repo_or_dir='snakers4/silero-vad',
-    model='utils',
-    force_reload=False,
-    trust_repo=True
-)
+# Распаковываем вручную из tuple (а не .get_speech_timestamps)
+get_speech_timestamps = utils[0]
+save_audio = utils[1]
+read_audio = utils[2]
+VADIterator = utils[3]
+collect_chunks = utils[4]
 
-# ✅ Распаковываем как методы объекта
-get_speech_timestamps = utils.get_speech_timestamps
-save_audio = utils.save_audio
-read_audio = utils.read_audio
-VADIterator = utils.VADIterator
-collect_chunks = utils.collect_chunks
 
 
 import librosa

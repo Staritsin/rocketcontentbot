@@ -1,6 +1,7 @@
 python-telegram-bot==13.7
 ffmpeg-python==0.2.0
 requests==2.26.0
+silero-vad
 flask==2.0.1
 yt-dlp==2021.12.1
 werkzeug==2.0.3

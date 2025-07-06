@@ -2,7 +2,6 @@ from flask import Flask, request, jsonify
 from flask import send_from_directory
 import requests
 import os
-
 import uuid
 from handlers.utils import download_telegram_file
 from handlers.handlers_stories import handle_single_video_processing
@@ -48,6 +47,14 @@ user_states = {}
 @app.route('/')
 def index():
     return 'Бот работает!'
+
+@app.route('/', methods=['POST'])
+def webhook():
+    update = request.get_json()
+    if update:
+        handle_update(update)  # твоя функция, которая уже есть
+    return 'ok', 200
+
 
 @app.route('/webhook', methods=['POST'])
 

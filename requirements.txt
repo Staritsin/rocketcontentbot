@@ -12,7 +12,7 @@ scipy
 soundfile
 silero-vad==5.1.2
 numpy==1.23.5
-auto-editor==27.1.1
+auto-editor==23.1.2
 
 
 librosa==0.9.2

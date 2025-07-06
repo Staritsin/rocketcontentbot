@@ -261,4 +261,37 @@ def handle_stats_request(chat_id):
         'text': message
     })
 
+def handle_update(update):
+    if 'message' in update:
+        message = update['message']
+        chat_id = message['chat']['id']
+        text = message.get('text', '')
+
+        if text == '/start':
+            requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+                'chat_id': chat_id,
+                'text': "Привет! Я бот. Пришли видео или текст для обработки."
+            })
+        elif text.startswith('http'):
+            handle_transcription_from_any_source(chat_id, text)
+        else:
+            requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+                'chat_id': chat_id,
+                'text': f"Ты написал: {text}"
+            })
+
+    elif 'callback_query' in update:
+        callback = update['callback_query']
+        chat_id = callback['message']['chat']['id']
+        data = callback['data']
+
+        if handle_callback_rating(data, chat_id):
+            return
+        if handle_callback_download_transcript(data, chat_id):
+            return
+
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"Нажата кнопка: {data}"
+        })
 

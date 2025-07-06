@@ -56,8 +56,6 @@ def webhook():
     return 'ok', 200
 
 
-@app.route('/webhook', methods=['POST'])
-
 def telegram_webhook():
     data = request.get_json()
     print("\U0001F525 Получены данные от Telegram:", data)

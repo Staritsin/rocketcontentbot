@@ -2,29 +2,30 @@ import subprocess
 import os
 import ffmpeg
 from handlers.utils import send_message
-
+import librosa
 import torch
 import torchaudio
+from silero_vad.utils_vad import get_speech_timestamps, collect_chunks, save_audio, read_audio
 
 # ✅ Загружаем модель + утилиты ОДНОЙ строкой
-model, utils = torch.hub.load(
-    repo_or_dir='snakers4/silero-vad',
-    model='silero_vad',  # НЕ 'utils'!!!
-    force_reload=False,
-    trust_repo=True
-)
+
+model = torch.jit.load('models/silero_vad.jit')
+model.eval()
+
+utils = {
+    'get_speech_timestamps': get_speech_timestamps,
+    'collect_chunks': collect_chunks,
+    'save_audio': save_audio,
+    'read_audio': read_audio
+}
+
 
 # ✅ Распаковываем tuple, который возвращает silero_vad()
-get_speech_timestamps = utils[0]
-save_audio = utils[1]
-read_audio = utils[2]
-VADIterator = utils[3]
-collect_chunks = utils[4]
+get_speech_timestamps = utils['get_speech_timestamps']
+collect_chunks = utils['collect_chunks']
+save_audio = utils['save_audio']
+read_audio = utils['read_audio']
 
-
-
-
-import librosa
 
 def remove_silence(chat_id, input_path, output_path):
     try:

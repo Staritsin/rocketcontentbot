@@ -36,8 +36,11 @@ from handlers.telegram_webhook_fix import (
     generate_platform_post,
     handle_rewrite_transcript,
     send_transcript_file,
-    handle_callback_rating
+    handle_callback_rating,
+    record_rating,
+    handle_update  # 👈 ДОБАВЬ ЭТО
 )
+
 
 app = Flask(__name__)
 BOT_TOKEN = os.environ.get('BOT_TOKEN')

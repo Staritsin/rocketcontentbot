@@ -53,9 +53,47 @@ def index():
 @app.route('/', methods=['POST'])
 def webhook():
     update = request.get_json()
-    if update:
-        handle_update(update)  # твоя функция, которая уже есть
+
+    if 'callback_query' in update:
+        callback = update['callback_query']
+        chat_id = callback['message']['chat']['id']
+        data = callback['data']
+
+        if handle_callback_rating(data, chat_id):
+            return 'ok', 200
+        if handle_callback_download_transcript(data, chat_id):
+            return 'ok', 200
+
+        requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+            'chat_id': chat_id,
+            'text': f"Нажата кнопка: {data}"
+        })
+
+    elif 'message' in update:
+        message = update['message']
+        chat_id = message['chat']['id']
+        text = message.get('text', '')
+
+        if text.lower() == '/start':
+            requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+                'chat_id': chat_id,
+                'text': "Привет! 👋 Я — твой персональный AI-ассистент.\nГотов начать? Напиши текст или пришли видео 🎬"
+            })
+
+        elif text.lower() == '/menu':
+            send_main_menu(chat_id)
+
+        elif text.startswith('http'):
+            handle_transcription_from_any_source(chat_id, text)
+
+        else:
+            requests.post(f'{TELEGRAM_API_URL}/sendMessage', json={
+                'chat_id': chat_id,
+                'text': f"Ты написал: {text}"
+            })
+
     return 'ok', 200
+
 
 
 def telegram_webhook():

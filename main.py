@@ -46,6 +46,26 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN')
 
 user_states = {}
 
+def send_main_menu(chat_id):
+    from telegram import ReplyKeyboardMarkup
+
+    keyboard = [
+        ["🎬 Скачать видео в Mp4", "🧠 Вытащить Текст"],
+        ["📖 Stories", "🎬 REELS"],
+        ["🖼 Фото", "🎙 Переводчик"],
+        ["💳 Подписка", "📂 Контент", "🛠 Поддержка"]
+    ]
+    reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+
+    requests.post(TELEGRAM_API_URL, json={
+        'chat_id': chat_id,
+        'text': 'Что будем делать? 👇',
+        'reply_markup': reply_markup.to_dict()
+    })
+
+
+
+
 @app.route('/')
 def index():
     return 'Бот работает!'

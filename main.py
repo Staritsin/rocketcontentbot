@@ -6,7 +6,7 @@ import uuid
 from handlers.utils import download_telegram_file
 from handlers.handlers_stories import handle_single_video_processing
 
-
+from telegram import ReplyKeyboardMarkup
 from telegram import InlineKeyboardButton
 from handlers.utils import send_message
 from handlers.utils import TELEGRAM_API_URL
@@ -319,7 +319,24 @@ def telegram_webhook():
                 return jsonify(success=True)
                 
             if text.lower() == '/start':
-                send_message(chat_id, "Привет! \ud83d\udc4b Я — твой персональный AI-ассистент...\nГотов начать? Жми /menu \ud83d\ude0a")
+            
+                keyboard = [
+                    ["🎬 Скачать видео в Mp4", "🧠 Вытащить Текст"],
+                    ["📖 Stories", "🎬 REELS"],
+                    ["🖼 Фото", "🎙 Переводчик"],
+                    ["💳 Подписка", "📂 Контент", "🛠 Поддержка"]
+                ]
+            
+                reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
+            
+                requests.post(TELEGRAM_API_URL, json={
+                    'chat_id': chat_id,
+                    'text': 'Привет! 👋 Я — твой персональный AI-ассистент...\nГотов начать? Выбирай ниже 👇',
+                    'reply_markup': reply_markup.to_dict()
+                })
+            
+                return jsonify(success=True)
+
             elif text.lower() == '/menu':
                 from telegram import ReplyKeyboardMarkup
             

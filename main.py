@@ -37,8 +37,7 @@ from handlers.telegram_webhook_fix import (
     handle_rewrite_transcript,
     send_transcript_file,
     handle_callback_rating,
-    record_rating,
-    handle_update  # 👈 ДОБАВЬ ЭТО
+    record_rating
 )
 
 
